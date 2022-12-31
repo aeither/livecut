@@ -14,15 +14,15 @@ declare global {
 export default function Video() {
   const { huddleClient } = useContext(StateContext);
   const peersKeys = useHuddleStore((state) => Object.keys(state.peers));
-  const lobbyPeers = useHuddleStore((state) => state.lobbyPeers);
   const roomState = useHuddleStore((state) => state.roomState);
+  const lobbyPeers = useHuddleStore((state) => state.lobbyPeers);
 
   const handleJoin = async () => {
     try {
-      await huddleClient.join("dev", {
-        address: "0x554fAFF9260C1bB9D6b8eEfd4848d1BCa0171555",
+      await huddleClient.join("livecut", {
+        address: "",
         wallet: "",
-        ens: "axit.eth",
+        ens: "",
       });
 
       console.log("joined");
@@ -34,8 +34,6 @@ export default function Video() {
   return (
     <ClientOnly>
       <div>
-        <h1>Vite + React</h1>
-
         <h2 className={`text-${!roomState.joined ? "red" : "green"}`}>
           Room Joined:&nbsp;{roomState.joined.toString()}
         </h2>
@@ -43,26 +41,26 @@ export default function Video() {
 
       <div>
         <div className="card">
-          <button onClick={handleJoin}>Join Room</button>
+          <button onClick={handleJoin}>Start Meet</button>
           <button onClick={() => huddleClient.enableWebcam()}>
             Enable Webcam
           </button>
           <button onClick={() => huddleClient.disableWebcam()}>
             Disable Webcam
           </button>
-          <button onClick={() => huddleClient.allowAllLobbyPeersToJoinRoom()}>
+          {/* <button onClick={() => huddleClient.allowAllLobbyPeersToJoinRoom()}>
             allowAllLobbyPeersToJoinRoom()
-          </button>
+          </button> */}
         </div>
 
         <StreamVideo />
 
-        {lobbyPeers[0] && <h2>Lobby Peers</h2>}
+        {/* {lobbyPeers[0] && <h2>Lobby Peers</h2>}
         <div>
           {lobbyPeers.map((peer) => (
             <div key={peer.peerId}>{peer.peerId}</div>
           ))}
-        </div>
+        </div> */}
 
         {peersKeys[0] && <h2>Peers</h2>}
 
