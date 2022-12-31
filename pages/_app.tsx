@@ -1,22 +1,45 @@
 import {
+  getHuddleClient,
+  HuddleClientProvider,
+} from "@huddle01/huddle01-client";
+import {
   createReactClient,
   LivepeerConfig,
   studioProvider,
 } from "@livepeer/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AptosClient } from "aptos";
+import { ConnectKitProvider, getDefaultClient } from "connectkit";
 import type { AppProps } from "next/app";
+import { createContext, useMemo } from "react";
+import { configureChains, createClient, WagmiConfig } from "wagmi";
+import {
+  goerli,
+  mainnet,
+  optimismGoerli,
+  polygon,
+  polygonMumbai,
+} from "wagmi/chains";
+import { publicProvider } from "wagmi/providers/public";
+import { StateContext } from "../state/context";
 import "../styles/globals.css";
 
-import { createContext, useMemo } from "react";
-
-import {
-  HuddleClientProvider,
-  getHuddleClient,
-} from "@huddle01/huddle01-client";
-import { StateContext } from "../state/context";
-
 export const AptosContext = createContext<AptosClient | null>(null);
+
+const { chains, provider, webSocketProvider } = configureChains(
+  [mainnet, goerli, optimismGoerli, polygonMumbai, polygon],
+  [publicProvider()]
+);
+
+const client = createClient(
+  getDefaultClient({
+    appName: "Livecut",
+    autoConnect: true,
+    provider,
+    chains,
+    webSocketProvider,
+  })
+);
 
 const queryClient = new QueryClient();
 
@@ -32,17 +55,21 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 
   return (
-    <StateContext.Provider value={{ huddleClient }}>
-      <HuddleClientProvider value={huddleClient}>
-        <AptosContext.Provider value={aptosClient}>
-          <LivepeerConfig client={livepeerClient}>
-            <QueryClientProvider client={queryClient}>
-              <Component {...pageProps} />
-            </QueryClientProvider>
-          </LivepeerConfig>
-        </AptosContext.Provider>
-      </HuddleClientProvider>
-    </StateContext.Provider>
+    <WagmiConfig client={client}>
+      <ConnectKitProvider theme="midnight">
+        <StateContext.Provider value={{ huddleClient }}>
+          <HuddleClientProvider value={huddleClient}>
+            <AptosContext.Provider value={aptosClient}>
+              <LivepeerConfig client={livepeerClient}>
+                <QueryClientProvider client={queryClient}>
+                  <Component {...pageProps} />
+                </QueryClientProvider>
+              </LivepeerConfig>
+            </AptosContext.Provider>
+          </HuddleClientProvider>
+        </StateContext.Provider>
+      </ConnectKitProvider>
+    </WagmiConfig>
   );
 }
 
