@@ -1,13 +1,8 @@
-// import { ConnectWallet, useWeb3 } from "@fewcha/web3-react";
-
-import ClientOnly from "../components/ClientOnly";
 import { useHuddleStore } from "@huddle01/huddle01-client/store";
-import { state } from "../state/state";
-import { useSnapshot } from "valtio";
-import { getHuddleClient } from "@huddle01/huddle01-client";
+import { useContext } from "react";
+import ClientOnly from "../components/ClientOnly";
 import StreamVideo from "../components/StreamVideo";
 import VideoAudio from "../components/VideoAudio";
-import { useContext } from "react";
 import { StateContext } from "../state/context";
 declare global {
   interface Window {
@@ -17,10 +12,7 @@ declare global {
 }
 
 export default function Video() {
-  //   const huddleClient: ReturnType<typeof getHuddleClient> =
-  //     state.huddleClient as any;
   const { huddleClient } = useContext(StateContext);
-  //   const huddleClient = getHuddleClient(process.env.NEXT_PUBLIC_HUDDLE_KEY);
   const peersKeys = useHuddleStore((state) => Object.keys(state.peers));
   const lobbyPeers = useHuddleStore((state) => state.lobbyPeers);
   const roomState = useHuddleStore((state) => state.roomState);

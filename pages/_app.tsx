@@ -14,7 +14,6 @@ import {
   HuddleClientProvider,
   getHuddleClient,
 } from "@huddle01/huddle01-client";
-import { state } from "../state/state";
 import { StateContext } from "../state/context";
 
 export const AptosContext = createContext<AptosClient | null>(null);
@@ -23,8 +22,6 @@ const queryClient = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
   const huddleClient = getHuddleClient(process.env.NEXT_PUBLIC_HUDDLE_KEY);
-  state.huddleClient = huddleClient;
-
   const livepeerClient = createReactClient({
     provider: studioProvider({ apiKey: process.env.NEXT_PUBLIC_LIVEPEER_API }),
   });
