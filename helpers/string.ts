@@ -1,7 +1,10 @@
 import { Conversation } from '@xmtp/xmtp-js'
 import { NextRouter } from 'next/router'
 
-export const truncate = (str: string | undefined, length: number): string | undefined => {
+export const truncate = (
+  str: string | undefined,
+  length: number
+): string | undefined => {
   if (!str) {
     return str
   }
@@ -11,7 +14,8 @@ export const truncate = (str: string | undefined, length: number): string | unde
   return str
 }
 
-export const formatDate = (d: Date | undefined): string => (d ? d.toLocaleDateString('en-US') : '')
+export const formatDate = (d: Date | undefined): string =>
+  d ? d.toLocaleDateString('en-US') : ''
 
 export const formatTime = (d: Date | undefined): string =>
   d

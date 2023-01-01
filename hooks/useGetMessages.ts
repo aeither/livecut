@@ -1,14 +1,12 @@
 import { SortDirection } from '@xmtp/xmtp-js'
 import { useEffect, useState } from 'react'
-import { useSnapshot } from 'valtio'
 import { MESSAGE_LIMIT } from '../helpers/constants'
-import Store from '../store/state'
+import { useAppStore } from '../store/state'
 
 const useGetMessages = (conversationKey: string, endTime?: Date) => {
-  const { convoMessages: stateConvoMessages, conversations } = useSnapshot(Store.state)
-  const convoMessages = stateConvoMessages.get(conversationKey)
-  const conversation = conversations.get(conversationKey)
-
+  const convoMessages = useAppStore(state => state.convoMessages.get(conversationKey))
+  const conversation = useAppStore(state => state.conversations.get(conversationKey))
+  const addMessages = useAppStore(state => state.addMessages)
   const [hasMore, setHasMore] = useState<Map<string, boolean>>(new Map())
 
   useEffect(() => {
@@ -20,10 +18,11 @@ const useGetMessages = (conversationKey: string, endTime?: Date) => {
       const newMessages = await conversation.messages({
         direction: SortDirection.SORT_DIRECTION_DESCENDING,
         limit: MESSAGE_LIMIT,
-        endTime: endTime,
+        // endTime: endTime,
       })
+      console.log('🚀 ~ file: useGetMessages.ts:23 ~ loadMessages ~ newMessages', newMessages)
       if (newMessages.length > 0) {
-        Store.addMessages(conversationKey, newMessages)
+        addMessages(conversationKey, newMessages)
         if (newMessages.length < MESSAGE_LIMIT) {
           hasMore.set(conversationKey, false)
           setHasMore(new Map(hasMore))

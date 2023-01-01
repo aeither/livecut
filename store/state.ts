@@ -1,80 +1,72 @@
-import { proxy } from 'valtio'
 import { Client, Conversation, DecodedMessage } from '@xmtp/xmtp-js'
+import { Signer } from 'ethers'
+import create from 'zustand'
 import getUniqueMessages from '../utils/getUniqueMessages'
 
-/**
- * Types
- */
-interface State {
+interface AppState {
+  signer: Signer | undefined
+  setSigner: (signer: Signer | undefined) => void
+  address: string | undefined
+  setAddress: (address: string | undefined) => void
   client: Client | undefined | null
+  setClient: (client: Client | undefined | null) => void
   conversations: Map<string, Conversation>
+  setConversations: (conversations: Map<string, Conversation>) => void
   loadingConversations: boolean
+  setLoadingConversations: (loadingConversations: boolean) => void
   convoMessages: Map<string, DecodedMessage[]>
   previewMessages: Map<string, DecodedMessage>
+  setPreviewMessage: (key: string, message: DecodedMessage) => void
+  setPreviewMessages: (previewMessages: Map<string, DecodedMessage>) => void
+  addMessages: (key: string, newMessages: DecodedMessage[]) => number
+  reset: () => void
 }
 
-/**
- * State
- */
-const state = proxy<State>({
-  conversations: new Map(),
+export const useAppStore = create<AppState>(set => ({
+  signer: undefined,
+  setSigner: (signer: Signer | undefined) => set(() => ({ signer })),
+  address: undefined,
+  setAddress: (address: string | undefined) => set(() => ({ address })),
   client: undefined,
+  setClient: (client: Client | undefined | null) => set(() => ({ client })),
+  conversations: new Map(),
+  setConversations: (conversations: Map<string, Conversation>) => set(() => ({ conversations })),
   loadingConversations: false,
+  setLoadingConversations: (loadingConversations: boolean) => set(() => ({ loadingConversations })),
   convoMessages: new Map(),
   previewMessages: new Map(),
-})
-
-/**
- * Store / Actions
- */
-const SettingsStore = {
-  state,
-
-  setClient: (client: Client | undefined | null) => {
-    state.client = client
-  },
-
-  setConversations: (conversations: Map<string, Conversation>) => {
-    state.conversations = conversations
-  },
-
-  setLoadingConversations: (loadingConversations: boolean) => {
-    state.loadingConversations = loadingConversations
-  },
-
-  setPreviewMessage: (key: string, message: DecodedMessage) => {
-    const newPreviewMessages = new Map(state.previewMessages)
-    newPreviewMessages.set(key, message)
-    state.previewMessages = newPreviewMessages
-  },
-
-  setPreviewMessages: (previewMessages: Map<string, DecodedMessage>) => {
-    state.previewMessages = previewMessages
-  },
-
+  setPreviewMessage: (key: string, message: DecodedMessage) =>
+    set(state => {
+      const newPreviewMessages = new Map(state.previewMessages)
+      newPreviewMessages.set(key, message)
+      return { previewMessages: newPreviewMessages }
+    }),
+  setPreviewMessages: previewMessages => set(() => ({ previewMessages })),
   addMessages: (key: string, newMessages: DecodedMessage[]) => {
     let numAdded = 0
-
-    const convoMessages = new Map(state.convoMessages)
-    const existing = state.convoMessages.get(key) || []
-    const updated = getUniqueMessages([...existing, ...newMessages])
-    numAdded = updated.length - existing.length
-    // If nothing has been added, return the old item to avoid unnecessary refresh
-    if (!numAdded) {
-      state.convoMessages = convoMessages
-    } else {
+    set(state => {
+      const convoMessages = new Map(state.convoMessages)
+      const existing = state.convoMessages.get(key) || []
+      const updated = getUniqueMessages([...existing, ...newMessages])
+      numAdded = updated.length - existing.length
+      // If nothing has been added, return the old item to avoid unnecessary refresh
+      if (!numAdded) {
+        return { convoMessages: state.convoMessages }
+      }
       convoMessages.set(key, updated)
-      state.convoMessages = convoMessages
-    }
-
+      return { convoMessages }
+    })
     return numAdded
   },
-  reset: () => {
-    state.client = undefined
-    state.conversations = new Map()
-    state.convoMessages = new Map()
-    state.previewMessages = new Map()
-  },
-}
-
-export default SettingsStore
+  reset: () =>
+    set(() => {
+      return {
+        client: undefined,
+        conversations: new Map(),
+        convoMessages: new Map(),
+        previewMessages: new Map(),
+        address: undefined,
+        signer: undefined,
+      }
+    }),
+}))
