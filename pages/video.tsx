@@ -3,7 +3,7 @@ import { useContext } from "react";
 import ClientOnly from "../components/ClientOnly";
 import StreamVideo from "../components/StreamVideo";
 import VideoAudio from "../components/VideoAudio";
-import { StateContext } from "../state/context";
+import { StateContext } from "../store/context";
 declare global {
   interface Window {
     aptos: any;

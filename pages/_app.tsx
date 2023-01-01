@@ -21,7 +21,7 @@ import {
   polygonMumbai,
 } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
-import { StateContext } from "../state/context";
+import { StateContext } from "../store/context";
 import "../styles/globals.css";
 
 export const AptosContext = createContext<AptosClient | null>(null);

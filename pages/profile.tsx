@@ -1,31 +1,23 @@
-import { ConnectKitButton } from "connectkit";
-import {
-  useAccount,
-  useConnect,
-  useDisconnect,
-  useEnsAvatar,
-  useEnsName,
-  useNetwork,
-  useSwitchNetwork,
-} from "wagmi";
-import ClientOnly from "../components/ClientOnly";
+import { ConnectKitButton } from 'connectkit'
+import { useAccount, useEnsAvatar, useEnsName } from 'wagmi'
+import ClientOnly from '../components/ClientOnly'
 
 declare global {
   interface Window {
-    aptos: any;
-    martian: any | undefined;
+    aptos: any
+    martian: any | undefined
   }
 }
 
 export default function Profile() {
-  const { address, isConnecting, isDisconnected } = useAccount();
+  const { address, isConnecting, isDisconnected } = useAccount()
 
   const { data: name } = useEnsName({
     address: address,
-  });
+  })
   const { data: avatar } = useEnsAvatar({
     address: address,
-  });
+  })
 
   return (
     <ClientOnly>
@@ -33,7 +25,7 @@ export default function Profile() {
         <ConnectKitButton />
         <div>Name: {name}</div>
         <div>Avatar: </div>
-        <img src={avatar || ""} alt="avatar" />
+        <img src={avatar || ''} alt="avatar" />
         {/* {isConnected ? (
           <button onClick={() => disconnect()}>Disconnect</button>
         ) : (
@@ -67,5 +59,5 @@ export default function Profile() {
         ))} */}
       </>
     </ClientOnly>
-  );
+  )
 }
