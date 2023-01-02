@@ -1,326 +1,258 @@
-import Head from "next/head";
-import {
-  Player,
-  useAsset,
-  useUpdateAsset,
-  useCreateAsset,
-  useAssetMetrics,
-} from "@livepeer/react";
-import { useState, useCallback, useMemo, useContext } from "react";
-import { useDropzone } from "react-dropzone";
-import { AptosContext } from "./_app";
-import { Types } from "aptos";
-import BarLoader from "react-spinners/BarLoader";
-import styles from "../styles/Home.module.css";
-// import { ConnectWallet, useWeb3 } from "@fewcha/web3-react";
+import type { NextPage } from 'next'
+import { Spin, Upload, Input, Button, message } from 'antd'
+import { useEffect, useRef, useState } from 'react'
+import { createFFmpeg, fetchFile, FFmpeg } from '@ffmpeg/ffmpeg'
+import { InboxOutlined } from '@ant-design/icons'
+import { fileTypeFromBuffer } from 'file-type'
+// import numerify from 'numerify/lib/index.cjs'
+import qs from 'query-string'
 
-import {
-  CreateAptosTokenBody,
-  CreateAptosTokenResponse,
-} from "../pages/api/create-aptos-token";
-import { LivepeerProvider } from "@livepeer/react";
+const { Dragger } = Upload
 
-import ClientOnly from "../components/ClientOnly";
-import { useQuery } from "@tanstack/react-query";
+type IOOptions = string | (string | null)[] | null
 
-declare global {
-  interface Window {
-    aptos: any;
-    martian: any | undefined;
-  }
+type OutputFile = {
+  name: string
+  href: string
 }
 
-export default function Aptos() {
-  const [address, setAddress] = useState<string | null>(null);
-  const [video, setVideo] = useState<File | null>(null);
-  const [isCreatingNft, setIsCreatingNft] = useState(false);
-  const [creationHash, setCreationHash] = useState("");
-  const [isExportStarted, setIsExportedStarted] = useState(false);
+const Home: NextPage = () => {
+  const [spinning, setSpinning] = useState(false)
+  const [tip, setTip] = useState(false)
+  const [inputOptions, setInputOptions] = useState<IOOptions>('-i')
+  const [outputOptions, setOutputOptions] = useState<IOOptions>('')
+  const [files, setFiles] = useState('')
+  const [outputFiles, setOutputFiles] = useState<OutputFile[]>([])
+  const [href, setHref] = useState('')
+  const [file, setFile] = useState<File>()
+  const [fileList, setFileList] = useState<File[]>([])
+  const [name, setName] = useState('input.mp4')
+  const [output, setOutput] = useState('output.mp4')
+  const ffmpeg = useRef<FFmpeg>()
 
-  const aptosClient = useContext(AptosContext);
-
-  const connectMartianWallet = async () => {
-    const { address } = await (window as any).martian.connect();
-    setAddress(address);
-  };
-
-  const disconnectMartianWallet = async () => {
-    await (window as any).martian.disconnect();
-    refetch();
-    setAddress(null);
-  };
-
-  const { data: isConnected, refetch } = useQuery({
-    queryKey: ["isConnected"],
-    queryFn: async () => await window.martian.isConnected(),
-  });
-
-  // const isAptosDefined = useMemo(
-  //   () => (typeof window !== "undefined" ? Boolean(window?.aptos) : false),
-  //   []
-  // );
-
-  const {
-    mutate: createAsset,
-    data: createdAsset,
-    status: createStatus,
-    uploadProgress,
-  } = useCreateAsset();
-
-  const { data: asset, status: assetStatus } = useAsset<LivepeerProvider, any>({
-    assetId: createdAsset?.id,
-    refetchInterval: (asset) =>
-      asset?.storage?.status?.phase !== "ready" ? 5000 : false,
-  });
-
-  const { mutate: updateAsset, status: updateStatus } = useUpdateAsset();
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles && acceptedFiles.length > 0 && acceptedFiles?.[0]) {
-      setVideo(acceptedFiles[0]);
+  const handleExec = async () => {
+    if (!file || !ffmpeg || !ffmpeg.current) {
+      return
     }
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "video/*": ["*.mp4"],
-    },
-    maxFiles: 1,
-    onDrop,
-  });
-
-  const isLoading = useMemo(
-    () =>
-      createStatus === "loading" ||
-      assetStatus === "loading" ||
-      updateStatus === "loading" ||
-      (asset && asset?.status?.phase !== "ready") ||
-      (isExportStarted && asset?.status?.phase !== "success"),
-    [createStatus, asset, assetStatus, updateStatus, isExportStarted]
-  );
-
-  const progressFormatted = useMemo(
-    () =>
-      uploadProgress
-        ? `Uploading: ${Math.round(uploadProgress * 100)}%`
-        : asset?.status?.progress
-        ? `Processing: ${Math.round(asset?.status?.progress * 100)}%`
-        : null,
-    [uploadProgress, asset?.status?.progress]
-  );
-
-  // const connectWallet = useCallback(async () => {
-  //   try {
-  //     if (isAptosDefined) {
-  //       await window.aptos.connect();
-  //       const account: { address: string } = await window.aptos.account();
-
-  //       setAddress(account.address);
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // }, [isAptosDefined]);
-
-  const mintNft = useCallback(async () => {
-    setIsCreatingNft(true);
+    setOutputFiles([])
     try {
-      if (address && aptosClient && asset?.storage?.ipfs?.nftMetadata?.url) {
-        const body: CreateAptosTokenBody = {
-          receiver: address,
-          metadataUri: asset.storage.ipfs.nftMetadata.url,
-        };
-        console.log("🚀 ~ file: index.tsx:131 ~ mintNft ~ body", body);
-
-        const response = await fetch("/api/create-aptos-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        });
-
-        const json = (await response.json()) as CreateAptosTokenResponse;
-
-        if ((json as CreateAptosTokenResponse).tokenName) {
-          const createResponse = json as CreateAptosTokenResponse;
-
-          // tokenClient?.claimToken(
-          //   address,
-          //   createResponse.creator,
-          //   createResponse.creator,
-          //   createResponse.collectionName,
-          //   createResponse.tokenName,
-          //   createResponse.tokenPropertyVersion
-          // );
-
-          // https://explorer.aptoslabs.com/account/0x3/modules
-
-          const payload = {
-            type: "entry_function_payload",
-            function: "0x3::token_transfers::claim_script",
-            arguments: [
-              createResponse.creator,
-              createResponse.creator,
-              createResponse.collectionName,
-              createResponse.tokenName,
-              createResponse.tokenPropertyVersion,
-            ],
-            type_arguments: [],
-          };
-
-          const transaction = await window.martian.generateTransaction(
-            address,
-            payload
-          );
-          const txnHash = await window.martian.signAndSubmitTransaction(
-            transaction
-          );
-          console.log("🚀 ~ file: index.tsx:179 ~ mintNft ~ txnHash", txnHash);
-
-          // const aptosResponse: Types.PendingTransaction =
-          //   await window.martian.signAndSubmitTransaction(transaction);
-
-          // const result = await aptosClient.waitForTransactionWithResult(
-          //   aptosResponse.hash,
-          //   {
-          //     checkSuccess: true,
-          //   }
-          // );
-          // console.log("🚀 ~ file: index.tsx:174 ~ mintNft ~ result", result);
-
-          // setCreationHash(result.hash);
-        }
+      setTip('Loading file into browser')
+      setSpinning(true)
+      for (const fileItem of fileList) {
+        ffmpeg.current.FS('writeFile', fileItem.name, await fetchFile(fileItem))
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsCreatingNft(false);
+      setTip('start executing the command')
+      await ffmpeg.current.run(
+        ...inputOptions.split(' '),
+        name,
+        ...outputOptions.split(' '),
+        output
+      )
+      setSpinning(false)
+
+      const data = ffmpeg.current.FS('readFile', output)
+      const type = await fileTypeFromBuffer(data.buffer)
+      if (type) {
+        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
+        setHref(objectURL)
+      }
+      message.success('Run successfully, click the download button to download the output file', 10)
+    } catch (err) {
+      console.error(err)
+      message.error(
+        'Failed to run, please check if the command is correct or open the console to view the error details',
+        10
+      )
     }
-  }, [
-    address,
-    aptosClient,
-    asset?.storage?.ipfs?.nftMetadata?.url,
-    setIsCreatingNft,
-  ]);
+  }
+
+  const handleGetFiles = async () => {
+    if (!files || !ffmpeg || !ffmpeg.current) {
+      return
+    }
+    const filenames = files
+      .split(',')
+      .filter(i => i)
+      .map(i => i.trim())
+    const outputFilesData = []
+    for (let filename of filenames) {
+      try {
+        const data = ffmpeg.current.FS('readFile', filename)
+        const type = await fileTypeFromBuffer(data.buffer)
+
+        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
+        outputFilesData.push({
+          name: filename,
+          href: objectURL,
+        })
+      } catch (err) {
+        message.error(`${filename} get failed`)
+        console.error(err)
+      }
+    }
+    setOutputFiles(outputFilesData)
+  }
+
+  useEffect(() => {
+    ;(async () => {
+      ffmpeg.current = createFFmpeg({
+        log: true,
+        corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+      })
+      ffmpeg.current.setProgress(({ ratio }) => {
+        console.log(ratio)
+        setTip(ratio)
+      })
+      setTip('ffmpeg static resource loading...')
+      setSpinning(true)
+      await ffmpeg.current.load()
+      setSpinning(false)
+    })()
+  }, [])
+
+  useEffect(() => {
+    const { inputOptions, outputOptions } = qs.parse(window.location.search)
+    if (inputOptions) {
+      setInputOptions(inputOptions)
+    }
+    if (outputOptions) {
+      setOutputOptions(outputOptions)
+    }
+  }, [])
+
+  useEffect(() => {
+    // run after inputOptions and outputOptions set from querystring
+    setTimeout(() => {
+      let queryString = qs.stringify({ inputOptions, outputOptions })
+      const newUrl = `${location.origin}${location.pathname}?${queryString}`
+      history.pushState('', '', newUrl)
+    })
+  }, [inputOptions, outputOptions])
 
   return (
-    <ClientOnly>
-      <div>
-        <div className={styles.container}>
-          <Head>
-            <title>Aptos NFT Minting Sample Dapp</title>
-            <meta name="description" content="Generated by create next app" />
-          </Head>
+    <div className="page-app">
+      {spinning && (
+        <Spin spinning={spinning} tip={tip}>
+          <div className="component-spin" />
+        </Spin>
+      )}
 
-          <main className={styles.main}>
-            <h1 className={styles.title}>
-              Welcome to <span>Aptos</span>
-            </h1>
+      <h2>ffmpeg-online</h2>
 
-            {isConnected ? (
-              <button onClick={disconnectMartianWallet}>Disconnect</button>
-            ) : (
-              <button onClick={connectMartianWallet}>Connect</button>
-            )}
-
-            {/* <div className={styles.connect}>
-              <button
-                className={styles.buttonConnect}
-                disabled={!isAptosDefined || Boolean(address)}
-                onClick={connectMartianWallet}
-              >
-                <p> {!address ? "Connect Wallet" : address}</p>
-              </button>
-            </div> */}
-
-            <>
-              {address && (
-                <div>
-                  {/* Drag/Drop file */}
-                  <div className={styles.drop} {...getRootProps()}>
-                    <input {...getInputProps()} />
-                    <div>
-                      <p>
-                        Drag and drop or <span>browse files</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Upload progress */}
-                  <div className={styles.progress}>
-                    {video ? (
-                      <p>Name: {video.name}</p>
-                    ) : (
-                      <p>Select a video file to upload.</p>
-                    )}
-                    {progressFormatted && <p>{progressFormatted}</p>}
-                  </div>
-
-                  {/* Upload video */}
-
-                  <div className={styles.buttonBox}>
-                    {asset?.status?.phase !== "ready" ? (
-                      <button
-                        className={styles.button}
-                        onClick={() => {
-                          if (video) {
-                            createAsset({ name: video.name, file: video });
-                          }
-                        }}
-                        disabled={!video || isLoading || Boolean(asset)}
-                      >
-                        Upload Asset
-                        <br />
-                        {isLoading && <BarLoader color="#fff" />}
-                      </button>
-                    ) : asset?.status?.phase === "ready" &&
-                      asset?.storage?.status?.phase !== "ready" ? (
-                      <button
-                        className={styles.button}
-                        onClick={() => {
-                          if (asset.id) {
-                            setIsExportedStarted(true);
-                            updateAsset({
-                              assetId: asset.id,
-                              storage: { ipfs: true },
-                            });
-                          }
-                        }}
-                        disabled={
-                          !asset.id ||
-                          isLoading ||
-                          Boolean(asset?.storage?.ipfs?.cid)
-                        }
-                      >
-                        Upload to IPFS
-                        <br />
-                        {isLoading && <BarLoader color="#fff" />}
-                      </button>
-                    ) : creationHash ? (
-                      <p className={styles.link}>
-                        <a
-                          href={`https://explorer.aptoslabs.com/txn/${creationHash}?network=Devnet`}
-                        >
-                          View Mint Transaction
-                        </a>
-                      </p>
-                    ) : asset?.storage?.status?.phase === "ready" ? (
-                      <button className={styles.button} onClick={mintNft}>
-                        Mint Video NFT
-                        <br />
-                        {isCreatingNft && <BarLoader color="#fff" />}
-                      </button>
-                    ) : (
-                      <></>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
-          </main>
-        </div>
+      <h4>1. Upload file</h4>
+      <Dragger
+        multiple
+        beforeUpload={(file, fileList) => {
+          setFile(file)
+          setFileList(v => [...v, ...fileList])
+          setName(file.name)
+          return false
+        }}
+      >
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Click or drag file upload</p>
+      </Dragger>
+      <h4>2. Set ffmpeg options</h4>
+      <div className="exec">
+        ffmpeg
+        <Input
+          value={inputOptions}
+          placeholder="please enter input options"
+          onChange={event => setInputOptions(event.target.value)}
+        />
+        <Input
+          value={name}
+          placeholder="please enter input filename"
+          onChange={event => setName(event.target.value)}
+        />
+        <Input
+          value={outputOptions}
+          placeholder="please enter output options"
+          onChange={event => setOutputOptions(event.target.value)}
+        />
+        <Input
+          value={output}
+          placeholder="Please enter the download file name"
+          onChange={event => setOutput(event.target.value)}
+        />
       </div>
-    </ClientOnly>
-  );
+      <h4>3. Run and get the output file</h4>
+      <Button type="primary" disabled={!Boolean(file)} onClick={handleExec}>
+        run
+      </Button>
+      <br />
+      <br />
+      {href && (
+        <a href={href} download={output}>
+          download file
+        </a>
+      )}
+      <h4>4. Get other file from file system (use , split)</h4>
+      <p style={{ color: 'gray' }}>
+        In some scenarios, the output file contains multiple files. At this time, multiple file
+        names can be separated by commas and typed into the input box below.
+      </p>
+      <Input
+        value={files}
+        placeholder="Please enter the download file name"
+        onChange={event => setFiles(event.target.value)}
+      />
+      <Button type="primary" disabled={!Boolean(file)} onClick={handleGetFiles}>
+        confirm
+      </Button>
+      <br />
+      <br />
+      {outputFiles.map((outputFile, index) => (
+        <div key={index}>
+          <a href={outputFile.href} download={outputFile.name}>
+            {outputFile.name}
+          </a>
+          <br />
+        </div>
+      ))}
+      <br />
+      <br />
+      <a
+        href="https://github.com/xiguaxigua/ffmpeg-online"
+        target="_blank"
+        className="github-corner"
+        aria-label="View source on GitHub"
+        rel="noreferrer"
+      >
+        <svg
+          width="80"
+          height="80"
+          viewBox="0 0 250 250"
+          style={{
+            fill: '#151513',
+            color: '#fff',
+            position: 'absolute',
+            top: 0,
+            border: 0,
+            right: 0,
+          }}
+          aria-hidden="true"
+        >
+          <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+          <path
+            d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+            fill="currentColor"
+            style={{
+              transformOrigin: '130px 106px',
+            }}
+            className="octo-arm"
+          ></path>
+          <path
+            d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+            fill="currentColor"
+            className="octo-body"
+          ></path>
+        </svg>
+      </a>
+    </div>
+  )
 }
+
+export default Home

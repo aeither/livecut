@@ -35,12 +35,13 @@ const nextConfig = {
         }
       })
     )
+
     return config
   },
   async headers() {
     return [
       {
-        source: '/editor', // change to appropriate path
+        source: '/',
         headers: [
           {
             key: 'Cross-Origin-Embedder-Policy',
@@ -49,6 +50,15 @@ const nextConfig = {
           {
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin',
+          },
+        ],
+      },
+      {
+        source: '/static/:all*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=9999999999, must-revalidate',
           },
         ],
       },
