@@ -4,6 +4,10 @@ import create from 'zustand'
 import getUniqueMessages from '../utils/getUniqueMessages'
 
 interface AppState {
+  videoProgress: any
+  setVideoProgress: (videoProgress: any | undefined) => void
+  videoURL: string | undefined
+  setVideoURL: (videoURL: string | undefined) => void
   signer: Signer | undefined
   setSigner: (signer: Signer | undefined) => void
   address: string | undefined
@@ -23,6 +27,10 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>(set => ({
+  videoProgress: undefined,
+  setVideoProgress: (videoProgress: any | undefined) => set(() => ({ videoProgress })),
+  videoURL: undefined,
+  setVideoURL: (videoURL: string | undefined) => set(() => ({ videoURL })),
   signer: undefined,
   setSigner: (signer: Signer | undefined) => set(() => ({ signer })),
   address: undefined,
