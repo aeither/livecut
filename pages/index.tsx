@@ -1,7 +1,8 @@
 import { InboxOutlined } from '@ant-design/icons'
-import { Button, Input, Spin, Upload } from 'antd'
+import { Button, Checkbox, Input, Spin, Upload } from 'antd'
+import { CheckboxChangeEvent } from 'antd/es/checkbox'
 import type { NextPage } from 'next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 // import numerify from 'numerify/lib/index.cjs'
 import { useSnapshot } from 'valtio'
 import ClientOnly from '../components/ClientOnly'
@@ -35,7 +36,18 @@ const Home: NextPage = () => {
   const [file, setFile] = useState<File>()
   const [fileList, setFileList] = useState<File[]>([])
 
+  const [isCutVideo, setIsCutVideo] = useState(false)
   // Functions
+  const onUpdateRange = () => {
+    if (isCutVideo) {
+      setOutputOptions(`-ss 00:00:00 -t ${currentTime} -c:v copy -c:a copy`)
+    } else {
+      setOutputOptions('')
+    }
+  }
+  useEffect(() => {
+    onUpdateRange()
+  }, [currentTime])
 
   return (
     <ClientOnly>
@@ -140,7 +152,7 @@ const Home: NextPage = () => {
         <input
           type="range"
           step={0.05}
-          max={videoState.video?.duration}
+          max={String(videoState.video?.duration)}
           onChange={e => setFormattedTime(e.target.value)}
         />
         <button
@@ -157,6 +169,24 @@ const Home: NextPage = () => {
         >
           Play / Pause
         </button>
+        <Checkbox onChange={(e: CheckboxChangeEvent) => setIsCutVideo(e.target.value)}>
+          Cut
+        </Checkbox>
+        <Button
+          onClick={() => {
+            if (file) handleExec(file, fileList)
+          }}
+        >
+          Trim video
+        </Button>
+        <Button
+          onClick={() => {
+            const x = videoState.video?.duration
+            console.log(x)
+          }}
+        >
+          log
+        </Button>
         <p>{currentTime}</p>
       </>
     </ClientOnly>

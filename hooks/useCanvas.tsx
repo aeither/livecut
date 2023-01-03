@@ -16,6 +16,7 @@ type VideoState = {
 
 export default function useCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [ctx, setCtx] = useState<CanvasRenderingContext2D>()
   const [videoState, setVideoState] = useState<VideoState>({
     file: null,
     url: null,
@@ -35,15 +36,9 @@ export default function useCanvas() {
   }
 
   function draw(context: CanvasRenderingContext2D) {
-    if (!canvasRef || !canvasRef.current) return
+    if (!canvasRef || !canvasRef.current || !videoState.video) return
 
-    context.drawImage(
-      videoState.video as any,
-      0,
-      0,
-      canvasRef.current.width,
-      canvasRef.current.height
-    )
+    context.drawImage(videoState.video, 0, 0, canvasRef.current.width, canvasRef.current.height)
 
     requestAnimationFrame(() => draw(context))
   }
@@ -72,9 +67,10 @@ export default function useCanvas() {
     const context = canvasRef.current.getContext('2d')
 
     if (context) {
+      setCtx(context)
       draw(context)
     }
-  }, [canvasRef, canvasRef.current])
+  }, [canvasRef, canvasRef.current, videoState.video])
 
   return {
     handleFileChange,
@@ -83,5 +79,6 @@ export default function useCanvas() {
     canvasRef,
     videoState,
     currentTime,
+    ctx,
   }
 }
