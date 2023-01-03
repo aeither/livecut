@@ -201,18 +201,20 @@ const Home: NextPage = () => {
       </> */}
 
       {/* Navigation */}
-      <div className="navbar bg-base-100">
+      <div className="navbar bg-base-100 p-0">
         <div className="navbar-start">
           <a className="btn-ghost btn text-xl normal-case">Livecut</a>
         </div>
-        <div className="navbar-center hidden lg:flex">Progress</div>
+        <div className="navbar-center hidden lg:flex">
+          <progress className="progress progress-success w-72"></progress>
+        </div>
         <div className="navbar-end">
           <a className="btn">Connect</a>
         </div>
       </div>
 
-      <div className="grid min-h-[calc(100vh-64px)] grid-flow-col grid-rows-3 gap-4">
-        <div className="... row-span-3 bg-red-200">
+      <div className="grid min-h-[calc(100vh-64px-24px)] grid-cols-5 gap-4 md:px-4">
+        <div className="col-span-1 row-span-5 rounded-xl bg-base-200 p-4">
           <h4>1. Upload file</h4>
           <div {...getRootProps()}>
             <input {...getInputProps()} />
@@ -247,13 +249,13 @@ const Home: NextPage = () => {
             />
           </div>
         </div>
-        <div className="... col-span-1 bg-red-200">
+        <div className="col-span-3 row-span-4 rounded-xl bg-base-200 p-4">
           <h2>Video</h2>
           <div style={{ borderWidth: '2px' }}>
             <canvas ref={canvasRef} width="640" height="480"></canvas>
           </div>
         </div>
-        <div className="... col-span-2 row-span-2 bg-red-200">
+        <div className="col-span-1 row-span-4 rounded-xl bg-base-200 p-4">
           <input
             type="range"
             step={0.05}
@@ -282,7 +284,7 @@ const Home: NextPage = () => {
 
           <p>{currentTime}</p>
         </div>
-        <div className="... col-span-1 bg-red-200">
+        <div className="col-span-4 row-span-1 rounded-xl bg-base-200 p-4">
           <h4>3. Run and get the output file</h4>
           <button
             disabled={!Boolean(file)}

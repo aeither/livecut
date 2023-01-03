@@ -21,6 +21,7 @@
     "antd": "^5.1.2",
     "aptos": "^1.4.0",
     "bignumber.js": "^9.1.1",
+    "clsx": "^1.2.1",
     "connectkit": "^1.1.1",
     "daisyui": "^2.46.1",
     "dotenv": "^16.0.2",
