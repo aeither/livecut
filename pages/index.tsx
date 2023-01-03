@@ -6,64 +6,36 @@ import { InboxOutlined } from '@ant-design/icons'
 import { fileTypeFromBuffer } from 'file-type'
 // import numerify from 'numerify/lib/index.cjs'
 import qs from 'query-string'
+import useFFmpeg from '../hooks/useFFmpeg'
+import FFmpegStore from '../store/valtio'
+import { useSnapshot } from 'valtio'
 
 const { Dragger } = Upload
 
-type IOOptions = string | (string | null)[] | null
-
-type OutputFile = {
-  name: string
-  href: string
-}
-
 const Home: NextPage = () => {
-  const [spinning, setSpinning] = useState(false)
-  const [tip, setTip] = useState(false)
-  const [inputOptions, setInputOptions] = useState<IOOptions>('-i')
-  const [outputOptions, setOutputOptions] = useState<IOOptions>('')
-  const [files, setFiles] = useState('')
-  const [outputFiles, setOutputFiles] = useState<OutputFile[]>([])
-  const [href, setHref] = useState('')
+  const { ffmpeg, handleExec: hookHandleExec } = useFFmpeg()
+  const { files, href, inputOptions, name, output, outputOptions, spinning, tip, outputFiles } =
+    useSnapshot(FFmpegStore.state)
+  const {
+    setFiles,
+    setHref,
+    setInputOptions,
+    setName,
+    setOutput,
+    setOutputOptions,
+    setSpinning,
+    setTip,
+    setOutputFiles,
+  } = FFmpegStore
+
   const [file, setFile] = useState<File>()
   const [fileList, setFileList] = useState<File[]>([])
-  const [name, setName] = useState('input.mp4')
-  const [output, setOutput] = useState('output.mp4')
-  const ffmpeg = useRef<FFmpeg>()
 
   const handleExec = async () => {
     if (!file || !ffmpeg || !ffmpeg.current) {
       return
     }
-    setOutputFiles([])
-    try {
-      setTip('Loading file into browser')
-      setSpinning(true)
-      for (const fileItem of fileList) {
-        ffmpeg.current.FS('writeFile', fileItem.name, await fetchFile(fileItem))
-      }
-      setTip('start executing the command')
-      await ffmpeg.current.run(
-        ...inputOptions.split(' '),
-        name,
-        ...outputOptions.split(' '),
-        output
-      )
-      setSpinning(false)
-
-      const data = ffmpeg.current.FS('readFile', output)
-      const type = await fileTypeFromBuffer(data.buffer)
-      if (type) {
-        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
-        setHref(objectURL)
-      }
-      message.success('Run successfully, click the download button to download the output file', 10)
-    } catch (err) {
-      console.error(err)
-      message.error(
-        'Failed to run, please check if the command is correct or open the console to view the error details',
-        10
-      )
-    }
+    hookHandleExec(file, fileList)
   }
 
   const handleGetFiles = async () => {
@@ -80,7 +52,7 @@ const Home: NextPage = () => {
         const data = ffmpeg.current.FS('readFile', filename)
         const type = await fileTypeFromBuffer(data.buffer)
 
-        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
+        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type?.mime }))
         outputFilesData.push({
           name: filename,
           href: objectURL,
@@ -94,29 +66,12 @@ const Home: NextPage = () => {
   }
 
   useEffect(() => {
-    ;(async () => {
-      ffmpeg.current = createFFmpeg({
-        log: true,
-        corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-      })
-      ffmpeg.current.setProgress(({ ratio }) => {
-        console.log(ratio)
-        setTip(ratio)
-      })
-      setTip('ffmpeg static resource loading...')
-      setSpinning(true)
-      await ffmpeg.current.load()
-      setSpinning(false)
-    })()
-  }, [])
-
-  useEffect(() => {
     const { inputOptions, outputOptions } = qs.parse(window.location.search)
     if (inputOptions) {
-      setInputOptions(inputOptions)
+      setInputOptions(inputOptions as string)
     }
     if (outputOptions) {
-      setOutputOptions(outputOptions)
+      setOutputOptions(outputOptions as string)
     }
   }, [])
 
@@ -213,7 +168,6 @@ const Home: NextPage = () => {
         </div>
       ))}
       <br />
-
     </div>
   )
 }

@@ -15,7 +15,7 @@ export default function Chat() {
   const { data: signer } = useSigner()
   const videoURL = useAppStore(state => state.videoURL)
   const videoProgress = useAppStore(state => state.videoProgress)
-  const { handleFileChange } = useFFmpeg()
+  // const { handleFileChange } = useFFmpeg()
   return (
     <ClientOnly>
       <>
@@ -24,7 +24,7 @@ export default function Chat() {
           type="file"
           name="file"
           id="file"
-          onChange={e => handleFileChange(e)}
+          // onChange={e => handleFileChange(e)}
           //   ref={fileRef}
         />
         {videoProgress && (
