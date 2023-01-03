@@ -1,16 +1,16 @@
-import { InboxOutlined } from '@ant-design/icons'
-import { Button, Checkbox, Input, Spin, Upload } from 'antd'
-import { CheckboxChangeEvent } from 'antd/es/checkbox'
+// import { Button, Input, Upload } from 'antd'
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 // import numerify from 'numerify/lib/index.cjs'
+import { useCallback } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { useSnapshot } from 'valtio'
 import ClientOnly from '../components/ClientOnly'
 import useCanvas from '../hooks/useCanvas'
 import useFFmpeg from '../hooks/useFFmpeg'
 import FFmpegStore from '../store/valtio'
 
-const { Dragger } = Upload
+// const { Dragger } = Upload
 
 const Home: NextPage = () => {
   // Edit Video
@@ -38,6 +38,14 @@ const Home: NextPage = () => {
 
   const [isCutVideo, setIsCutVideo] = useState(false)
   // Functions
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFile(acceptedFiles[0])
+    setFileList(v => [...v, ...acceptedFiles])
+    setName(acceptedFiles[0].name)
+    handleFileChange(acceptedFiles[0])
+  }, [])
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+
   const onUpdateRange = () => {
     console.log('isCutVideo: ', isCutVideo)
     if (isCutVideo) {
@@ -203,45 +211,36 @@ const Home: NextPage = () => {
         </div>
       </div>
 
-      <div className="grid min-h-[calc(100vh-64px)] grid-flow-col grid-rows-2 gap-4">
+      <div className="grid min-h-[calc(100vh-64px)] grid-flow-col grid-rows-3 gap-4">
         <div className="... row-span-3 bg-red-200">
           <h4>1. Upload file</h4>
-          <Dragger
-            multiple
-            accept="vide/*"
-            beforeUpload={(file, fileList) => {
-              setFile(file)
-              setFileList(v => [...v, ...fileList])
-              setName(file.name)
-
-              handleFileChange(file)
-              return false
-            }}
-          >
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Click or drag file upload</p>
-          </Dragger>
+          <div {...getRootProps()}>
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag and drop some files here, or click to select files</p>
+            )}
+          </div>
           <h4>2. Set ffmpeg options</h4>
           <div className="exec">
             ffmpeg
-            <Input
+            <input
               value={inputOptions}
               placeholder="please enter input options"
               onChange={event => setInputOptions(event.target.value)}
             />
-            <Input
+            <input
               value={name}
               placeholder="please enter input filename"
               onChange={event => setName(event.target.value)}
             />
-            <Input
+            <input
               value={outputOptions}
               placeholder="please enter output options"
               onChange={event => setOutputOptions(event.target.value)}
             />
-            <Input
+            <input
               value={output}
               placeholder="Please enter the download file name"
               onChange={event => setOutput(event.target.value)}
@@ -285,15 +284,14 @@ const Home: NextPage = () => {
         </div>
         <div className="... col-span-1 bg-red-200">
           <h4>3. Run and get the output file</h4>
-          <Button
-            type="primary"
+          <button
             disabled={!Boolean(file)}
             onClick={() => {
               if (file) handleExec(file, fileList)
             }}
           >
             run
-          </Button>
+          </button>
           {href && (
             <a href={href} download={output}>
               download file
