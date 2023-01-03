@@ -39,8 +39,10 @@ const Home: NextPage = () => {
   const [isCutVideo, setIsCutVideo] = useState(false)
   // Functions
   const onUpdateRange = () => {
+    console.log('isCutVideo: ', isCutVideo)
     if (isCutVideo) {
       setOutputOptions(`-ss 00:00:00 -t ${currentTime} -c:v copy -c:a copy`)
+      console.log('output options: ', outputOptions)
     } else {
       setOutputOptions('')
     }
@@ -51,7 +53,7 @@ const Home: NextPage = () => {
 
   return (
     <ClientOnly>
-      {spinning && (
+      {/* {spinning && (
         <Spin spinning={spinning} tip={tip}>
           <div className="component-spin" />
         </Spin>
@@ -141,10 +143,10 @@ const Home: NextPage = () => {
           <br />
         </div>
       ))}
-      <br />
+      <br /> */}
 
       {/* Edit Video */}
-      <>
+      {/* <>
         <h2>Video</h2>
         <div style={{ borderWidth: '2px' }}>
           <canvas ref={canvasRef} width="640" height="480"></canvas>
@@ -188,7 +190,131 @@ const Home: NextPage = () => {
           log
         </Button>
         <p>{currentTime}</p>
-      </>
+      </> */}
+
+      {/* Navigation */}
+      <div className="navbar bg-base-100">
+        <div className="navbar-start">
+          <a className="btn-ghost btn text-xl normal-case">Livecut</a>
+        </div>
+        <div className="navbar-center hidden lg:flex">Progress</div>
+        <div className="navbar-end">
+          <a className="btn">Connect</a>
+        </div>
+      </div>
+
+      <div className="grid min-h-[calc(100vh-64px)] grid-flow-col grid-rows-2 gap-4">
+        <div className="... row-span-3 bg-red-200">
+          <h4>1. Upload file</h4>
+          <Dragger
+            multiple
+            accept="vide/*"
+            beforeUpload={(file, fileList) => {
+              setFile(file)
+              setFileList(v => [...v, ...fileList])
+              setName(file.name)
+
+              handleFileChange(file)
+              return false
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Click or drag file upload</p>
+          </Dragger>
+          <h4>2. Set ffmpeg options</h4>
+          <div className="exec">
+            ffmpeg
+            <Input
+              value={inputOptions}
+              placeholder="please enter input options"
+              onChange={event => setInputOptions(event.target.value)}
+            />
+            <Input
+              value={name}
+              placeholder="please enter input filename"
+              onChange={event => setName(event.target.value)}
+            />
+            <Input
+              value={outputOptions}
+              placeholder="please enter output options"
+              onChange={event => setOutputOptions(event.target.value)}
+            />
+            <Input
+              value={output}
+              placeholder="Please enter the download file name"
+              onChange={event => setOutput(event.target.value)}
+            />
+          </div>
+        </div>
+        <div className="... col-span-1 bg-red-200">
+          <h2>Video</h2>
+          <div style={{ borderWidth: '2px' }}>
+            <canvas ref={canvasRef} width="640" height="480"></canvas>
+          </div>
+        </div>
+        <div className="... col-span-2 row-span-2 bg-red-200">
+          <input
+            type="range"
+            step={0.05}
+            max={String(videoState.video?.duration)}
+            onChange={e => setFormattedTime(e.target.value)}
+          />
+          <button
+            onClick={() => {
+              if (videoState.video) videoState.video.currentTime = 2
+            }}
+          >
+            jump to frame
+          </button>
+          <button
+            onClick={() => {
+              playOrPause()
+            }}
+          >
+            Play / Pause
+          </button>
+          <input
+            type="checkbox"
+            onChange={e => setIsCutVideo(e.target.checked)}
+            className="checkbox"
+          />
+
+          <p>{currentTime}</p>
+        </div>
+        <div className="... col-span-1 bg-red-200">
+          <h4>3. Run and get the output file</h4>
+          <Button
+            type="primary"
+            disabled={!Boolean(file)}
+            onClick={() => {
+              if (file) handleExec(file, fileList)
+            }}
+          >
+            run
+          </Button>
+          {href && (
+            <a href={href} download={output}>
+              download file
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* <div className="flex h-[calc(100vh-64px)]">
+        <div className="grid w-full grid-cols-5">
+          <div className="col-span-1 flex h-full">
+            <div className="m-4 flex w-full rounded-lg bg-slate-700 bg-red-400 p-4">hello</div>
+          </div>
+
+          <div className="col-span-3 flex h-full">
+            <div className="col-span-3 ">
+              <div className="m-4 flex w-full rounded-lg bg-slate-700 bg-red-400 p-4">hello</div>
+            </div>
+          </div>
+        </div>
+      </div> */}
     </ClientOnly>
   )
 }
