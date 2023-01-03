@@ -9,8 +9,25 @@ declare global {
 }
 
 export default function Canvas() {
-  const { canvasRef, handleFileChange, playOrPause, setFormattedTime, videoState, currentTime } =
-    useCanvas()
+  const {
+    ctx,
+    canvasRef,
+    handleFileChange,
+    playOrPause,
+    setFormattedTime,
+    videoState,
+    currentTime,
+  } = useCanvas()
+
+  const drawText = () => {
+    if (!ctx || !canvasRef.current) return
+
+    console.log('drawing...')
+    ctx.font = '30px Arial'
+    ctx.fillStyle = 'red'
+    ctx.textAlign = 'center'
+    ctx.fillText('Hello World', canvasRef.current.width / 2, canvasRef.current.height / 2)
+  }
 
   return (
     <ClientOnly>
@@ -50,6 +67,7 @@ export default function Canvas() {
           Play / Pause
         </button>
         <p>{currentTime}</p>
+        <button onClick={drawText}>drawText</button>
       </>
     </ClientOnly>
   )
