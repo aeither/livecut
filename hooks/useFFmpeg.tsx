@@ -5,11 +5,67 @@ import { useSnapshot } from 'valtio'
 import { useAppStore } from '../store/state'
 import FFmpegStore from '../store/valtio'
 // import numerify from 'numerify/lib/index.cjs'
+import qs from 'query-string'
 
 export default function useFFmpeg() {
   const { files, href, inputOptions, name, output, outputOptions, spinning, tip, outputFiles } =
     useSnapshot(FFmpegStore.state)
+  const { setInputOptions, setOutputOptions, setOutputFiles, setHref } = FFmpegStore
+
   const ffmpeg = useRef<FFmpeg>()
+
+  const handleExec = async (file: File, fileList: File[]) => {
+    if (!file || !ffmpeg || !ffmpeg.current) {
+      return
+    }
+    setOutputFiles([])
+    try {
+      for (const fileItem of fileList) {
+        ffmpeg.current.FS('writeFile', fileItem.name, await fetchFile(fileItem))
+      }
+      await ffmpeg.current.run(
+        ...inputOptions.split(' '),
+        name,
+        ...outputOptions.split(' '),
+        output
+      )
+
+      const data = ffmpeg.current.FS('readFile', output)
+      const type = await fileTypeFromBuffer(data.buffer)
+      if (type) {
+        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
+        setHref(objectURL)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleGetFiles = async () => {
+    if (!files || !ffmpeg || !ffmpeg.current) {
+      return
+    }
+    const filenames = files
+      .split(',')
+      .filter(i => i)
+      .map(i => i.trim())
+    const outputFilesData = []
+    for (let filename of filenames) {
+      try {
+        const data = ffmpeg.current.FS('readFile', filename)
+        const type = await fileTypeFromBuffer(data.buffer)
+
+        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type?.mime }))
+        outputFilesData.push({
+          name: filename,
+          href: objectURL,
+        })
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    setOutputFiles(outputFilesData)
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -26,32 +82,24 @@ export default function useFFmpeg() {
     })()
   }, [])
 
-  const handleExec = async (file: File, fileList: File[]) => {
-    if (!file || !ffmpeg || !ffmpeg.current) {
-      return
+  useEffect(() => {
+    const { inputOptions, outputOptions } = qs.parse(window.location.search)
+    if (inputOptions) {
+      setInputOptions(inputOptions as string)
     }
-    FFmpegStore.setOutputFiles([])
-    try {
-      for (const fileItem of fileList) {
-        ffmpeg.current.FS('writeFile', fileItem.name, await fetchFile(fileItem))
-      }
-      await ffmpeg.current.run(
-        ...inputOptions.split(' '),
-        name,
-        ...outputOptions.split(' '),
-        output
-      )
+    if (outputOptions) {
+      setOutputOptions(outputOptions as string)
+    }
+  }, [])
 
-      const data = ffmpeg.current.FS('readFile', output)
-      const type = await fileTypeFromBuffer(data.buffer)
-      if (type) {
-        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
-        FFmpegStore.setHref(objectURL)
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  useEffect(() => {
+    // run after inputOptions and outputOptions set from querystring
+    setTimeout(() => {
+      let queryString = qs.stringify({ inputOptions, outputOptions })
+      const newUrl = `${location.origin}${location.pathname}?${queryString}`
+      history.pushState('', '', newUrl)
+    })
+  }, [inputOptions, outputOptions])
 
   // const transcode = async (file: File) => {
   //   if (!ffmpeg.current) return
@@ -87,6 +135,6 @@ export default function useFFmpeg() {
   return {
     ffmpeg,
     handleExec,
-    // handleFileChange,
+    handleGetFiles,
   }
 }

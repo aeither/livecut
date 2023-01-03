@@ -13,7 +13,7 @@ import { useSnapshot } from 'valtio'
 const { Dragger } = Upload
 
 const Home: NextPage = () => {
-  const { ffmpeg, handleExec: hookHandleExec } = useFFmpeg()
+  const { handleExec, handleGetFiles } = useFFmpeg()
   const { files, href, inputOptions, name, output, outputOptions, spinning, tip, outputFiles } =
     useSnapshot(FFmpegStore.state)
   const {
@@ -31,58 +31,9 @@ const Home: NextPage = () => {
   const [file, setFile] = useState<File>()
   const [fileList, setFileList] = useState<File[]>([])
 
-  const handleExec = async () => {
-    if (!file || !ffmpeg || !ffmpeg.current) {
-      return
-    }
-    hookHandleExec(file, fileList)
-  }
+  // Edit Video
 
-  const handleGetFiles = async () => {
-    if (!files || !ffmpeg || !ffmpeg.current) {
-      return
-    }
-    const filenames = files
-      .split(',')
-      .filter(i => i)
-      .map(i => i.trim())
-    const outputFilesData = []
-    for (let filename of filenames) {
-      try {
-        const data = ffmpeg.current.FS('readFile', filename)
-        const type = await fileTypeFromBuffer(data.buffer)
-
-        const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type?.mime }))
-        outputFilesData.push({
-          name: filename,
-          href: objectURL,
-        })
-      } catch (err) {
-        message.error(`${filename} get failed`)
-        console.error(err)
-      }
-    }
-    setOutputFiles(outputFilesData)
-  }
-
-  useEffect(() => {
-    const { inputOptions, outputOptions } = qs.parse(window.location.search)
-    if (inputOptions) {
-      setInputOptions(inputOptions as string)
-    }
-    if (outputOptions) {
-      setOutputOptions(outputOptions as string)
-    }
-  }, [])
-
-  useEffect(() => {
-    // run after inputOptions and outputOptions set from querystring
-    setTimeout(() => {
-      let queryString = qs.stringify({ inputOptions, outputOptions })
-      const newUrl = `${location.origin}${location.pathname}?${queryString}`
-      history.pushState('', '', newUrl)
-    })
-  }, [inputOptions, outputOptions])
+  // Functions
 
   return (
     <div className="page-app">
@@ -134,7 +85,13 @@ const Home: NextPage = () => {
         />
       </div>
       <h4>3. Run and get the output file</h4>
-      <Button type="primary" disabled={!Boolean(file)} onClick={handleExec}>
+      <Button
+        type="primary"
+        disabled={!Boolean(file)}
+        onClick={() => {
+          if (file) handleExec(file, fileList)
+        }}
+      >
         run
       </Button>
       <br />
@@ -168,6 +125,8 @@ const Home: NextPage = () => {
         </div>
       ))}
       <br />
+
+      {/* Edit Video */}
     </div>
   )
 }
