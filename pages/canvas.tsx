@@ -1,6 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import ClientOnly from '../components/ClientOnly'
-import moment from 'moment'
 import useCanvas from '../hooks/useCanvas'
 
 declare global {
@@ -19,7 +17,14 @@ export default function Canvas() {
       <>
         <h2>Video</h2>
         <form>
-          <input type="file" accept="video/*" onChange={handleFileChange} />
+          <input
+            type="file"
+            accept="video/*"
+            onChange={event => {
+              const file = event.target.files && event.target.files[0]
+              if (file) handleFileChange(file)
+            }}
+          />
         </form>
         <div style={{ borderWidth: '2px' }}>
           <canvas ref={canvasRef} width="640" height="480"></canvas>

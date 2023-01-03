@@ -23,8 +23,7 @@ export default function useCanvas() {
   })
   const [currentTime, setCurrentTime] = useState('00:00:00')
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0]
+  const handleFileChange = (file: File) => {
     if (file === null) throw new Error('No file')
     const url = URL.createObjectURL(file)
     const video = document.createElement('video')

@@ -1,18 +1,22 @@
-import type { NextPage } from 'next'
-import { Spin, Upload, Input, Button, message } from 'antd'
-import { useEffect, useRef, useState } from 'react'
-import { createFFmpeg, fetchFile, FFmpeg } from '@ffmpeg/ffmpeg'
 import { InboxOutlined } from '@ant-design/icons'
-import { fileTypeFromBuffer } from 'file-type'
+import { Button, Input, Spin, Upload } from 'antd'
+import type { NextPage } from 'next'
+import { useState } from 'react'
 // import numerify from 'numerify/lib/index.cjs'
-import qs from 'query-string'
+import { useSnapshot } from 'valtio'
+import ClientOnly from '../components/ClientOnly'
+import useCanvas from '../hooks/useCanvas'
 import useFFmpeg from '../hooks/useFFmpeg'
 import FFmpegStore from '../store/valtio'
-import { useSnapshot } from 'valtio'
 
 const { Dragger } = Upload
 
 const Home: NextPage = () => {
+  // Edit Video
+  const { canvasRef, handleFileChange, playOrPause, setFormattedTime, videoState, currentTime } =
+    useCanvas()
+
+  // FFmpeg
   const { handleExec, handleGetFiles } = useFFmpeg()
   const { files, href, inputOptions, name, output, outputOptions, spinning, tip, outputFiles } =
     useSnapshot(FFmpegStore.state)
@@ -31,12 +35,10 @@ const Home: NextPage = () => {
   const [file, setFile] = useState<File>()
   const [fileList, setFileList] = useState<File[]>([])
 
-  // Edit Video
-
   // Functions
 
   return (
-    <div className="page-app">
+    <ClientOnly>
       {spinning && (
         <Spin spinning={spinning} tip={tip}>
           <div className="component-spin" />
@@ -48,10 +50,13 @@ const Home: NextPage = () => {
       <h4>1. Upload file</h4>
       <Dragger
         multiple
+        accept="vide/*"
         beforeUpload={(file, fileList) => {
           setFile(file)
           setFileList(v => [...v, ...fileList])
           setName(file.name)
+
+          handleFileChange(file)
           return false
         }}
       >
@@ -127,7 +132,34 @@ const Home: NextPage = () => {
       <br />
 
       {/* Edit Video */}
-    </div>
+      <>
+        <h2>Video</h2>
+        <div style={{ borderWidth: '2px' }}>
+          <canvas ref={canvasRef} width="640" height="480"></canvas>
+        </div>
+        <input
+          type="range"
+          step={0.05}
+          max={videoState.video?.duration}
+          onChange={e => setFormattedTime(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            if (videoState.video) videoState.video.currentTime = 2
+          }}
+        >
+          jump to frame
+        </button>
+        <button
+          onClick={() => {
+            playOrPause()
+          }}
+        >
+          Play / Pause
+        </button>
+        <p>{currentTime}</p>
+      </>
+    </ClientOnly>
   )
 }
 
