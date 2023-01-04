@@ -29,13 +29,15 @@ const MessageComposer = ({ onSend }: MessageComposerProps): JSX.Element => {
         <input
           type="text"
           placeholder="Type something..."
-          className={''}
+          className="input"
           name="message"
           value={message}
           onChange={onMessageChange}
           required
         />
-        <button type="submit">{!message ? 'Write something' : 'Send'}</button>
+        <button className="btn" type="submit">
+          {!message ? 'Write something' : 'Send'}
+        </button>
       </form>
     </div>
   )
