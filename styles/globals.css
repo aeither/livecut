@@ -28,3 +28,7 @@ a {
     background: black;
   }
 } */
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
