@@ -10,7 +10,7 @@ declare global {
     martian: any | undefined
   }
 }
-import { VideoOffIcon, VideoOnIcon } from './Icons/VideoIcons'
+import { MicOnIcon, VideoOffIcon, VideoOnIcon } from './Icons/VideoIcons'
 
 export default function Video() {
   const { huddleClient } = useContext(StateContext)
@@ -35,21 +35,29 @@ export default function Video() {
   return (
     <ClientOnly>
       <div>
-        <h2 className={``}>{roomState.joined ? <>In Meeting</> : <></>}</h2>
+        <h2 className={``}>
+          {roomState.joined ? (
+            <>In Meeting</>
+          ) : (
+            <button className="btn-accent btn-block btn" onClick={handleJoin}>
+              Start Meet
+            </button>
+          )}
+        </h2>
       </div>
 
       <div>
         <div className="card">
-          <button className="btn-accent btn" onClick={handleJoin}>
-            Start Meet
-          </button>
           <div className="flex justify-around p-4">
             <button onClick={() => huddleClient.enableWebcam()} className="btn-circle btn">
               <VideoOnIcon />
             </button>
-            <button onClick={() => huddleClient.disableWebcam()} className="btn-circle btn">
-              <VideoOffIcon />
+            <button onClick={() => huddleClient.enableMic()} className="btn-circle btn">
+              <MicOnIcon />
             </button>
+            {/* <button onClick={() => huddleClient.disableWebcam()} className="btn-circle btn">
+              <VideoOffIcon />
+            </button> */}
           </div>
         </div>
 
