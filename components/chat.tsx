@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAccount, useSigner } from 'wagmi'
-import ClientOnly from '../components/ClientOnly'
-import MessageComposer from '../components/MessageComposer'
-import MessagesList from '../components/MessagesList'
+import ClientOnly from './ClientOnly'
+import MessageComposer from './MessageComposer'
+import MessagesList from './MessagesList'
 import { getConversationKey } from '../helpers'
 import useGetMessages from '../hooks/useGetMessages'
 import useInitXmtpClient from '../hooks/useInitXmtpClient'
@@ -47,9 +47,6 @@ export default function Chat() {
       // Load all messages in the conversation
       const messages = await conversation.messages()
       console.log('🚀 ~ file: chat.tsx:51 ~ setup ~ messages', messages)
-
-      // Send a message
-      // await conversation.send('gm')
     }
     setup()
   }, [signer, client])
@@ -86,16 +83,13 @@ export default function Chat() {
   }, [recipientWalletAddress, client])
 
   return (
-    <ClientOnly>
-      <>
-        <p>Hello</p>
-        <MessagesList
-          fetchNextMessages={fetchNextMessages}
-          messages={messages ?? []}
-          hasMore={hasMore}
-        />
-        <MessageComposer onSend={sendMessage} />{' '}
-      </>
-    </ClientOnly>
+    <>
+      <MessagesList
+        fetchNextMessages={fetchNextMessages}
+        messages={messages ?? []}
+        hasMore={hasMore}
+      />
+      <MessageComposer onSend={sendMessage} />{' '}
+    </>
   )
 }

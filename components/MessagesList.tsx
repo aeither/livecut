@@ -50,11 +50,6 @@ const formatDate = (d?: Date) =>
 
 const MessageTile = ({ message, address }: MessageTileProps): JSX.Element => (
   <div className={clsx('chat', address === message.senderAddress ? 'chat-end' : 'chat-start')}>
-    <div className="chat-image avatar">
-      <div className="w-10 rounded-full">
-        <img src="https://placeimg.com/192/192/people" />
-      </div>
-    </div>
     <div className="chat-header">
       {shortAddress(message.senderAddress as string)}
       <time className="text-xs opacity-50">{formatTime(message.sent)}</time>
@@ -101,7 +96,7 @@ const MessagesList = ({ messages, fetchNextMessages, hasMore }: MessageListProps
       dataLength={messages.length}
       next={fetchNextMessages}
       className="flex flex-col-reverse overflow-y-auto pl-4"
-      height={size[1] > 700 ? '87vh' : '83vh'}
+      height={'50vh'}
       inverse
       endMessage={<ConversationBeginningNotice />}
       hasMore={hasMore}

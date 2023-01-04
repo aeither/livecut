@@ -22,6 +22,10 @@ module.exports = {
           success: '#36D399',
           warning: '#FBBD23',
           error: '#F87272',
+
+          'text-base-content': '#36D399',
+          'text-base-100': '#36D399',
+          'text-base-200': '#36D399',
         },
       },
     ],
