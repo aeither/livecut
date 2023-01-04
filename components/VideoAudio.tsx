@@ -1,76 +1,64 @@
-import { useHuddleStore } from "@huddle01/huddle01-client/store";
-import React, { useCallback, useEffect, useRef } from "react";
+import { useHuddleStore } from '@huddle01/huddle01-client/store'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 interface Props {
-  peerIdAtIndex: string;
+  peerIdAtIndex: string
 }
 
 const VideoAudio: React.FC<Props> = ({ peerIdAtIndex }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   const peerCamTrack = useHuddleStore(
-    useCallback(
-      (state) => state.peers[peerIdAtIndex]?.consumers?.cam,
-      [peerIdAtIndex]
-    )
-  )?.track;
+    useCallback(state => state.peers[peerIdAtIndex]?.consumers?.cam, [peerIdAtIndex])
+  )?.track
 
   const peerMicTrack = useHuddleStore(
-    useCallback(
-      (state) => state.peers[peerIdAtIndex]?.consumers?.mic,
-      [peerIdAtIndex]
-    )
-  )?.track;
+    useCallback(state => state.peers[peerIdAtIndex]?.consumers?.mic, [peerIdAtIndex])
+  )?.track
 
   const getStream = (_track: MediaStreamTrack) => {
-    const stream = new MediaStream();
-    stream.addTrack(_track);
-    return stream;
-  };
+    const stream = new MediaStream()
+    stream.addTrack(_track)
+    return stream
+  }
 
   useEffect(() => {
-    const videoObj = videoRef.current;
+    const videoObj = videoRef.current
 
     if (videoObj && peerCamTrack) {
-      videoObj.load();
-      videoObj.srcObject = getStream(peerCamTrack);
-      videoObj.play().catch((err) => {
+      videoObj.load()
+      videoObj.srcObject = getStream(peerCamTrack)
+      videoObj.play().catch(err => {
         console.log({
-          message: "Error playing video",
+          message: 'Error playing video',
           meta: {
             err,
           },
-        });
-      });
+        })
+      })
     }
 
     return () => {
       if (videoObj) {
-        videoObj?.pause();
-        videoObj.srcObject = null;
+        videoObj?.pause()
+        videoObj.srcObject = null
       }
-    };
-  }, [peerCamTrack]);
+    }
+  }, [peerCamTrack])
 
   useEffect(() => {
     if (peerMicTrack && audioRef.current) {
-      audioRef.current.srcObject = getStream(peerMicTrack);
+      audioRef.current.srcObject = getStream(peerMicTrack)
     }
-  }, [peerMicTrack]);
+  }, [peerMicTrack])
 
   return (
-    <div style={{ width: "50%" }}>
-      <video
-        ref={videoRef}
-        muted
-        autoPlay
-        playsInline
-        style={{ width: "100%" }}
-      />
+    <div style={{ width: '100%' }}>
+      <video ref={videoRef} muted autoPlay playsInline style={{ width: '100%' }} />
       <audio ref={audioRef} autoPlay playsInline controls={false}></audio>
     </div>
-  );
-};
+  )
+}
 
-export default React.memo(VideoAudio);
+export default React.memo(VideoAudio)

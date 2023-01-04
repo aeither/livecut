@@ -1,18 +1,14 @@
-// import { Button, Input, Upload } from 'antd'
+import clsx from 'clsx'
 import type { NextPage } from 'next'
-import { useEffect, useState } from 'react'
-// import numerify from 'numerify/lib/index.cjs'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useSnapshot } from 'valtio'
+import Chat from '../components/Chat'
 import ClientOnly from '../components/ClientOnly'
+import Video from '../components/Video'
 import useCanvas from '../hooks/useCanvas'
 import useFFmpeg from '../hooks/useFFmpeg'
 import FFmpegStore from '../store/valtio'
-import Chat from '../components/chat'
-import clsx from 'clsx'
-
-// const { Dragger } = Upload
 
 const Home: NextPage = () => {
   // Edit Video
@@ -160,7 +156,7 @@ const Home: NextPage = () => {
             <Chat />
           </div>
           <div className={clsx('card', activeTab !== 1 && 'hidden')}>
-            <div>hello world</div>
+            <Video />
           </div>
         </div>
         <div className="col-span-4 row-span-1 rounded-xl bg-base-200 p-4">

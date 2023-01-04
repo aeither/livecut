@@ -1,8 +1,8 @@
 import { useHuddleStore } from '@huddle01/huddle01-client/store'
 import { useContext } from 'react'
-import ClientOnly from '../components/ClientOnly'
-import StreamVideo from '../components/StreamVideo'
-import VideoAudio from '../components/VideoAudio'
+import ClientOnly from './ClientOnly'
+import StreamVideo from './StreamVideo'
+import VideoAudio from './VideoAudio'
 import { StateContext } from '../store/context'
 declare global {
   interface Window {
@@ -10,6 +10,7 @@ declare global {
     martian: any | undefined
   }
 }
+import { VideoOffIcon, VideoOnIcon } from './Icons/VideoIcons'
 
 export default function Video() {
   const { huddleClient } = useContext(StateContext)
@@ -34,29 +35,41 @@ export default function Video() {
   return (
     <ClientOnly>
       <div>
-        <h2 className={`text-${!roomState.joined ? 'red' : 'green'}`}>
-          Room Joined:&nbsp;{roomState.joined.toString()}
-        </h2>
+        <h2 className={``}>{roomState.joined ? <>In Meeting</> : <></>}</h2>
       </div>
 
       <div>
         <div className="card">
-          <button onClick={handleJoin}>Start Meet</button>
-          <button onClick={() => huddleClient.enableWebcam()}>Enable Webcam</button>
-          <button onClick={() => huddleClient.disableWebcam()}>Disable Webcam</button>
-          {/* <button onClick={() => huddleClient.allowAllLobbyPeersToJoinRoom()}>
-            allowAllLobbyPeersToJoinRoom()
-          </button> */}
+          <button className="btn-accent btn" onClick={handleJoin}>
+            Start Meet
+          </button>
+          <div className="flex justify-around p-4">
+            <button onClick={() => huddleClient.enableWebcam()} className="btn-circle btn">
+              <VideoOnIcon />
+            </button>
+            <button onClick={() => huddleClient.disableWebcam()} className="btn-circle btn">
+              <VideoOffIcon />
+            </button>
+          </div>
         </div>
 
         <StreamVideo />
 
-        {/* {lobbyPeers[0] && <h2>Lobby Peers</h2>}
+        {lobbyPeers[0] && <h2>In waiting room</h2>}
         <div>
-          {lobbyPeers.map((peer) => (
-            <div key={peer.peerId}>{peer.peerId}</div>
+          {lobbyPeers.map(peer => (
+            <div className="p-4" key={peer.peerId}>
+              {peer.peerId}
+            </div>
           ))}
-        </div> */}
+        </div>
+
+        <button
+          className="btn-block btn"
+          onClick={() => huddleClient.allowAllLobbyPeersToJoinRoom()}
+        >
+          Allow join
+        </button>
 
         {peersKeys[0] && <h2>Peers</h2>}
 

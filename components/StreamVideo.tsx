@@ -15,7 +15,7 @@ const StreamVideo = () => {
   }, [stream]);
   return (
     <video
-      style={{ width: "50%" }}
+      style={{ width: "100%" }}
       ref={videoRef}
       autoPlay
       muted
