@@ -25,7 +25,7 @@ const MessageComposer = ({ onSend }: MessageComposerProps): JSX.Element => {
 
   return (
     <div className={''}>
-      <form className={''} autoComplete="off" onSubmit={onSubmit}>
+      <form className="flex flex-col" autoComplete="off" onSubmit={onSubmit}>
         <input
           type="text"
           placeholder="Type something..."
@@ -36,7 +36,7 @@ const MessageComposer = ({ onSend }: MessageComposerProps): JSX.Element => {
           required
         />
         <button className="btn" type="submit">
-          {!message ? 'Write something' : 'Send'}
+          {!message ? 'Write' : 'Send'}
         </button>
       </form>
     </div>

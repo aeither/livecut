@@ -23,6 +23,8 @@ export default function useCanvas() {
     video: null,
   })
   const [currentTime, setCurrentTime] = useState('00:00:00')
+  const [cutStartTime, setCutStartTime] = useState<string>('00:00:00')
+  const [cutEndTime, setCutEndTime] = useState<string>('00:00:00')
 
   const handleFileChange = (file: File) => {
     if (file === null) throw new Error('No file')
@@ -49,7 +51,7 @@ export default function useCanvas() {
     videoState.video.paused ? videoState.video.play() : videoState.video.pause()
   }
 
-  const setFormattedTime = (value: string) => {
+  const setFormattedTime = (value: string, cut = 'end') => {
     if (videoState.video) {
       videoState.video.currentTime = Number(value)
 
@@ -59,6 +61,11 @@ export default function useCanvas() {
         .format('H:mm:ss')
 
       setCurrentTime(_currentTime)
+      if (cut === 'end') {
+        setCutEndTime(_currentTime)
+      } else {
+        setCutStartTime(_currentTime)
+      }
     }
   }
 
@@ -79,6 +86,8 @@ export default function useCanvas() {
     canvasRef,
     videoState,
     currentTime,
+    cutStartTime,
+    cutEndTime,
     ctx,
   }
 }
