@@ -1,15 +1,13 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useAccount, useSigner } from 'wagmi'
 import ClientOnly from '../components/ClientOnly'
-import { Client } from '@xmtp/xmtp-js'
-import { Wallet } from 'ethers'
-import { useAccount, useConnect, useSigner } from 'wagmi'
 import MessageComposer from '../components/MessageComposer'
+import MessagesList from '../components/MessagesList'
+import { getConversationKey } from '../helpers'
+import useGetMessages from '../hooks/useGetMessages'
+import useInitXmtpClient from '../hooks/useInitXmtpClient'
 import useSendMessage from '../hooks/useSendMessage'
 import { useAppStore } from '../store/state'
-import { useCallback, useEffect, useState } from 'react'
-import useInitXmtpClient from '../hooks/useInitXmtpClient'
-import MessagesList from '../components/MessagesList'
-import useGetMessages from '../hooks/useGetMessages'
-import { getConversationKey } from '../helpers'
 
 declare global {
   interface Window {
@@ -18,7 +16,8 @@ declare global {
   }
 }
 
-const recipientWalletAddress = '0x3F11b27F323b62B159D2642964fa27C46C841897'
+const recipientWalletAddress =
+  process.env.NEXT_PUBLIC_CONVO_ADDRESS || '0x3F11b27F323b62B159D2642964fa27C46C841897'
 
 export default function Chat() {
   const { isConnected } = useAccount()
@@ -28,15 +27,15 @@ export default function Chat() {
   const client = useAppStore(state => state.client)
   const conversations = useAppStore(state => state.conversations)
   const selectedConversation = conversations.get(recipientWalletAddress)
-  const setConversations = useAppStore(state => state.setConversations)
   const conversationKey = getConversationKey(selectedConversation)
+  const setConversations = useAppStore(state => state.setConversations)
 
   const { sendMessage } = useSendMessage(selectedConversation)
-  const [endTime, setEndTime] = useState<Map<string, Date>>(new Map())
+  // const [endTime, setEndTime] = useState<Map<string, Date>>(new Map())
 
   const { convoMessages: messages, hasMore } = useGetMessages(
-    conversationKey,
-    endTime.get(conversationKey)
+    conversationKey
+    // endTime.get(conversationKey)
   )
   console.log('🚀 ~ file: chat.tsx:38 ~ Chat ~ messages', messages)
 
@@ -58,13 +57,13 @@ export default function Chat() {
   const fetchNextMessages = useCallback(() => {
     if (hasMore && Array.isArray(messages) && messages.length > 0 && conversationKey) {
       const lastMsgDate = messages[messages.length - 1].sent
-      const currentEndTime = endTime.get(conversationKey)
-      if (!currentEndTime || lastMsgDate <= currentEndTime) {
-        endTime.set(conversationKey, lastMsgDate)
-        setEndTime(new Map(endTime))
-      }
+      // const currentEndTime = endTime.get(conversationKey)
+      // if (!currentEndTime || lastMsgDate <= currentEndTime) {
+      //   endTime.set(conversationKey, lastMsgDate)
+      //   setEndTime(new Map(endTime))
+      // }
     }
-  }, [conversationKey, hasMore, messages, endTime])
+  }, [conversationKey, hasMore, messages])
 
   useEffect(() => {
     const startNewConversation = async () => {
