@@ -10,6 +10,7 @@ import useCanvas from '../hooks/useCanvas'
 import useFFmpeg from '../hooks/useFFmpeg'
 import FFmpegStore from '../store/valtio'
 import Chat from '../components/chat'
+import clsx from 'clsx'
 
 // const { Dragger } = Upload
 
@@ -38,6 +39,7 @@ const Home: NextPage = () => {
   const [fileList, setFileList] = useState<File[]>([])
 
   const [isCutVideo, setIsCutVideo] = useState(false)
+  const [activeTab, setActiveTab] = useState(0)
   // Functions
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFile(acceptedFiles[0])
@@ -64,13 +66,16 @@ const Home: NextPage = () => {
     <ClientOnly>
       {/* Navigation */}
       <div className="navbar bg-base-100 p-0">
-        <div className="navbar-start">
-          <a className="btn-ghost btn text-xl normal-case">Livecut</a>
+        <div className="navbar-start pl-4">
+          <div className="w-32">
+            <img src="/images/livecut-logo-text-transparent.png" width="100%" alt="" />
+          </div>
+          {/* <a className="btn-ghost btn text-xl normal-case">Livecut</a> */}
         </div>
         <div className="navbar-center hidden lg:flex">
           <progress className="progress progress-success w-72"></progress>
         </div>
-        <div className="navbar-end">
+        <div className="navbar-end pr-4">
           <a className="btn">Connect</a>
         </div>
       </div>
@@ -81,9 +86,9 @@ const Home: NextPage = () => {
           <div className="rounded-2xl border-dashed bg-neutral p-8" {...getRootProps()}>
             <input {...getInputProps()} />
             {isDragActive ? (
-              <p>Drop the files here ...</p>
+              <p>Drop the files here to upload...</p>
             ) : (
-              <p>Drag and drop some files here, or click to select files</p>
+              <p>Drop here, or click to select</p>
             )}
           </div>
           <h4>2. Advanced Configuration</h4>
@@ -122,7 +127,7 @@ const Home: NextPage = () => {
               if (file) handleExec(file, fileList)
             }}
           >
-            run
+            Export
           </button>
           {href && (
             <a href={href} download={output}>
@@ -139,8 +144,24 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="col-span-1 row-span-4 rounded-xl bg-base-200 p-4">
-          <h2>Chat</h2>
-          <Chat />
+          <div className="tabs tabs-boxed flex justify-around pb-2">
+            {['Chat', 'Meet'].map((name, index) => (
+              <>
+                <a
+                  onClick={() => setActiveTab(index)}
+                  className={clsx('tab tab-lg', activeTab === index && 'tab-active')}
+                >
+                  {name}
+                </a>
+              </>
+            ))}
+          </div>
+          <div className={clsx('card', activeTab !== 0 && 'hidden')}>
+            <Chat />
+          </div>
+          <div className={clsx('card', activeTab !== 1 && 'hidden')}>
+            <div>hello world</div>
+          </div>
         </div>
         <div className="col-span-4 row-span-1 rounded-xl bg-base-200 p-4">
           <input
@@ -154,10 +175,19 @@ const Home: NextPage = () => {
           <button
             className="btn"
             onClick={() => {
-              if (videoState.video) videoState.video.currentTime = 2
+              if (videoState.video && videoState.video.currentTime > 2)
+                videoState.video.currentTime -= 2
             }}
           >
-            jump to frame
+            Back
+          </button>
+          <button
+            className="btn"
+            onClick={() => {
+              if (videoState.video) videoState.video.currentTime += 2
+            }}
+          >
+            Forward
           </button>
           <button
             className="btn"

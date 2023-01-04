@@ -1,40 +1,40 @@
-import { useHuddleStore } from "@huddle01/huddle01-client/store";
-import { useContext } from "react";
-import ClientOnly from "../components/ClientOnly";
-import StreamVideo from "../components/StreamVideo";
-import VideoAudio from "../components/VideoAudio";
-import { StateContext } from "../store/context";
+import { useHuddleStore } from '@huddle01/huddle01-client/store'
+import { useContext } from 'react'
+import ClientOnly from '../components/ClientOnly'
+import StreamVideo from '../components/StreamVideo'
+import VideoAudio from '../components/VideoAudio'
+import { StateContext } from '../store/context'
 declare global {
   interface Window {
-    aptos: any;
-    martian: any | undefined;
+    aptos: any
+    martian: any | undefined
   }
 }
 
 export default function Video() {
-  const { huddleClient } = useContext(StateContext);
-  const peersKeys = useHuddleStore((state) => Object.keys(state.peers));
-  const roomState = useHuddleStore((state) => state.roomState);
-  const lobbyPeers = useHuddleStore((state) => state.lobbyPeers);
+  const { huddleClient } = useContext(StateContext)
+  const peersKeys = useHuddleStore(state => Object.keys(state.peers))
+  const roomState = useHuddleStore(state => state.roomState)
+  const lobbyPeers = useHuddleStore(state => state.lobbyPeers)
 
   const handleJoin = async () => {
     try {
-      await huddleClient.join("livecut", {
-        address: "",
-        wallet: "",
-        ens: "",
-      });
+      await huddleClient.join('livecut', {
+        address: '',
+        wallet: '',
+        ens: '',
+      })
 
-      console.log("joined");
+      console.log('joined')
     } catch (error) {
-      console.log({ error });
+      console.log({ error })
     }
-  };
+  }
 
   return (
     <ClientOnly>
       <div>
-        <h2 className={`text-${!roomState.joined ? "red" : "green"}`}>
+        <h2 className={`text-${!roomState.joined ? 'red' : 'green'}`}>
           Room Joined:&nbsp;{roomState.joined.toString()}
         </h2>
       </div>
@@ -42,12 +42,8 @@ export default function Video() {
       <div>
         <div className="card">
           <button onClick={handleJoin}>Start Meet</button>
-          <button onClick={() => huddleClient.enableWebcam()}>
-            Enable Webcam
-          </button>
-          <button onClick={() => huddleClient.disableWebcam()}>
-            Disable Webcam
-          </button>
+          <button onClick={() => huddleClient.enableWebcam()}>Enable Webcam</button>
+          <button onClick={() => huddleClient.disableWebcam()}>Disable Webcam</button>
           {/* <button onClick={() => huddleClient.allowAllLobbyPeersToJoinRoom()}>
             allowAllLobbyPeersToJoinRoom()
           </button> */}
@@ -65,11 +61,11 @@ export default function Video() {
         {peersKeys[0] && <h2>Peers</h2>}
 
         <div className="peers-grid">
-          {peersKeys.map((key) => (
+          {peersKeys.map(key => (
             <VideoAudio key={`peerId-${key}`} peerIdAtIndex={key} />
           ))}
         </div>
       </div>
     </ClientOnly>
-  );
+  )
 }
