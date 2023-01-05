@@ -7,6 +7,7 @@ import BundlrUploader from '../components/Bundlr'
 import Chat from '../components/Chat'
 import ClientOnly from '../components/ClientOnly'
 import { Play, SkipBack, SkipForward } from '../components/Icons/VideoIcons'
+import MintAptos from '../components/MintAptos'
 import Navigation from '../components/Navigation'
 import Video from '../components/Video'
 import useCanvas from '../hooks/useCanvas'
@@ -145,6 +146,8 @@ const Home: NextPage = () => {
         )}
 
         {href && <BundlrUploader />}
+
+        <MintAptos video={file} />
       </>
     )
   }
