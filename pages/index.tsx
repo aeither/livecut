@@ -3,6 +3,7 @@ import type { NextPage } from 'next'
 import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useSnapshot } from 'valtio'
+import BundlrUploader from '../components/Bundlr'
 import Chat from '../components/Chat'
 import ClientOnly from '../components/ClientOnly'
 import { Play, SkipBack, SkipForward } from '../components/Icons/VideoIcons'
@@ -33,18 +34,8 @@ const Home: NextPage = () => {
   const [file, setFile] = useState<File>()
   const [fileList, setFileList] = useState<File[]>([])
 
-  // Functions
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFile(acceptedFiles[0])
-    setFileList(v => [...v, ...acceptedFiles])
-    setName(acceptedFiles[0].name)
-
-    // canvas
-    handleFileChange(acceptedFiles[0])
-  }, [])
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-
   const [isCutVideo, setIsCutVideo] = useState(false)
+  const [leftActiveTab, setLeftActiveTab] = useState(0)
   const [activeTab, setActiveTab] = useState(0)
 
   const onUpdateRange = () => {
@@ -59,65 +50,125 @@ const Home: NextPage = () => {
     onUpdateRange()
   }, [currentTime])
 
+  const VideoMedia = () => {
+    // Functions
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+      setFile(acceptedFiles[0])
+      setFileList(v => [...v, ...acceptedFiles])
+      setName(acceptedFiles[0].name)
+
+      // canvas
+      handleFileChange(acceptedFiles[0])
+    }, [])
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+
+    return (
+      <>
+        {/* <VideoMedia /> */}
+        <h4>Upload video</h4>
+        <div className="rounded-2xl border-dashed bg-neutral p-8" {...getRootProps()}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here to upload...</p>
+          ) : (
+            <p>Drop here, or click to select</p>
+          )}
+        </div>
+
+        {fileList &&
+          fileList.map((file, i) => {
+            const url = URL.createObjectURL(file)
+
+            return (
+              <div className="mt-4 flex p-2" key={i}>
+                <div className="overflow-hidden rounded-lg hover:ring">
+                  <video src={url} width="100%"></video>
+                </div>
+              </div>
+            )
+          })}
+
+        {/* <BundlrUploader /> */}
+      </>
+    )
+  }
+
+  const VideoSettings = () => {
+    return (
+      <>
+        {/* <VideoSettings /> */}
+        <h4>Advanced Configuration</h4>
+        <div className="flex w-full flex-col gap-2">
+          <input
+            value={inputOptions}
+            className="input max-w-xs"
+            placeholder="please enter input options"
+            onChange={event => setInputOptions(event.target.value)}
+          />
+          <input
+            value={name}
+            className="input max-w-xs"
+            placeholder="please enter input filename"
+            onChange={event => setName(event.target.value)}
+          />
+          <input
+            value={outputOptions}
+            className="input max-w-xs"
+            placeholder="please enter output options"
+            onChange={event => setOutputOptions(event.target.value)}
+          />
+          <input
+            value={output}
+            className="input max-w-xs"
+            placeholder="Please enter the download file name"
+            onChange={event => setOutput(event.target.value)}
+          />
+        </div>
+
+        <h4>Convert</h4>
+        <button
+          disabled={!Boolean(file)}
+          className="btn"
+          onClick={() => {
+            if (file) handleExec(file, fileList)
+          }}
+        >
+          Render
+        </button>
+        {href && (
+          <a className="p-4" href={href} download={output}>
+            Completed
+          </a>
+        )}
+      </>
+    )
+  }
+
   return (
     <ClientOnly>
       <Navigation />
 
       <div className="grid min-h-[calc(100vh-64px-64px)] grid-cols-5 gap-4 md:px-4">
         <div className="col-span-1 row-span-5 rounded-xl bg-base-200 p-4">
-          {/* <VideoSettings /> */}
-          <h4>1. Upload file</h4>
-          <div className="rounded-2xl border-dashed bg-neutral p-8" {...getRootProps()}>
-            <input {...getInputProps()} />
-            {isDragActive ? (
-              <p>Drop the files here to upload...</p>
-            ) : (
-              <p>Drop here, or click to select</p>
-            )}
+          <div className="flex h-full flex-col">
+            <div className="tabs tabs-boxed flex justify-around pb-2">
+              {['Media', 'Deliver'].map((name, index) => (
+                <a
+                  key={index}
+                  onClick={() => setLeftActiveTab(index)}
+                  className={clsx('tab tab-lg', leftActiveTab === index && 'tab-active')}
+                >
+                  {name}
+                </a>
+              ))}
+            </div>
+            <div className={clsx('flex h-full flex-col', leftActiveTab !== 0 && 'hidden')}>
+              <VideoMedia />
+            </div>
+            <div className={clsx('flex h-full flex-col', leftActiveTab !== 1 && 'hidden')}>
+              <VideoSettings />
+            </div>
           </div>
-          <h4>2. Advanced Configuration</h4>
-          <div className="flex w-full flex-col gap-2">
-            <input
-              value={inputOptions}
-              className="input max-w-xs"
-              placeholder="please enter input options"
-              onChange={event => setInputOptions(event.target.value)}
-            />
-            <input
-              value={name}
-              className="input max-w-xs"
-              placeholder="please enter input filename"
-              onChange={event => setName(event.target.value)}
-            />
-            <input
-              value={outputOptions}
-              className="input max-w-xs"
-              placeholder="please enter output options"
-              onChange={event => setOutputOptions(event.target.value)}
-            />
-            <input
-              value={output}
-              className="input max-w-xs"
-              placeholder="Please enter the download file name"
-              onChange={event => setOutput(event.target.value)}
-            />
-          </div>
-
-          <h4>3. Run and get the output file</h4>
-          <button
-            disabled={!Boolean(file)}
-            className="btn"
-            onClick={() => {
-              if (file) handleExec(file, fileList)
-            }}
-          >
-            Export
-          </button>
-          {href && (
-            <a className="p-4" href={href} download={output}>
-              Download
-            </a>
-          )}
         </div>
         <div className="col-span-3 row-span-4 rounded-xl bg-base-200 p-4">
           {/* <h2>Video</h2> */}
@@ -173,10 +224,10 @@ const Home: NextPage = () => {
               </a>
             ))}
           </div>
-          <div className={clsx('card', activeTab !== 0 && 'hidden')}>
+          <div className={clsx(activeTab !== 0 && 'hidden')}>
             <Chat />
           </div>
-          <div className={clsx('card', activeTab !== 1 && 'hidden')}>
+          <div className={clsx(activeTab !== 1 && 'hidden')}>
             <Video />
           </div>
         </div>
