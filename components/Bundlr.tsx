@@ -1,19 +1,24 @@
 import { WebBundlr } from '@bundlr-network/client'
 import BigNumber from 'bignumber.js'
-import { useState } from 'react'
-import ClientOnly from '../components/ClientOnly'
+import { useEffect, useState } from 'react'
+import ClientOnly from './ClientOnly'
 // @ts-ignore
 import { sleep } from '@bundlr-network/client/build/common/upload'
 import { providers } from 'ethers'
 import fileReaderStream from 'filereader-stream'
 import { useNetwork } from 'wagmi'
+import { useSnapshot } from 'valtio'
+import FFmpegStore from '../store/valtio'
+import toast from 'react-hot-toast'
 
 const bundlerHttpAddress = 'https://devnet.bundlr.network'
 const currency = 'matic'
 const rpcUrl = 'https://rpc-mumbai.maticvigil.com'
 const chainId = `0x${(80001).toString(16)}`
 
-export default function Bundlr() {
+export default function BundlrUploader() {
+  const { href } = useSnapshot(FFmpegStore.state)
+
   const { chain } = useNetwork()
 
   // bundlr client and address
@@ -77,7 +82,8 @@ export default function Bundlr() {
     if (!bundlr.address) {
       console.log('something went wrong')
     }
-    alert(`Connected to ${bundlerHttpAddress}`)
+    toast(`Connected to ${bundlerHttpAddress}`)
+
     setAddress(bundlr?.address)
     setBundler(bundlr)
   }
@@ -88,16 +94,19 @@ export default function Bundlr() {
 
   const fund = async () => {
     if (bundler && fundAmount) {
-      alert('Funding...')
+      const toastId = toast.loading('Funding...')
       const value = parseInput(fundAmount)
       if (!value) return
       await bundler
         .fund(value)
-        .then(res => {
-          alert(`Funded ${res?.target} with tx ID : ${res?.id}`)
+        .then(async res => {
+          toast.success(`Funded ${res?.target} with tx ID : ${res?.id}`, {
+            id: toastId,
+          })
+          await getBundlrBalance()
         })
         .catch(e => {
-          alert(`Failed to fund - ${e.data?.message || e.message}`)
+          toast.error(`Failed to fund - ${e.data?.message || e.message}`, { id: toastId })
         })
     }
   }
@@ -106,51 +115,16 @@ export default function Bundlr() {
     setFundingAmount(evt.target.value)
   }
 
-  const withdraw = async () => {
-    if (bundler && withdrawAmount) {
-      alert('Withdrawing..')
-      const value = parseInput(withdrawAmount)
-      if (!value) return
-      await bundler
-        .withdrawBalance(value)
-        .then(data => {
-          alert(`Withdrawal successful - ${data?.tx_id}`)
-        })
-        .catch((err: any) => {
-          alert('Withdrawal Unsuccessful!')
-        })
-    }
-  }
+  const fileToStream = async () => {
+    if (href === '') return
 
-  const updateWithdrawAmount = (evt: React.BaseSyntheticEvent) => {
-    setWithdrawAmount(evt.target.value)
-  }
+    let file = await fetch(href)
+      .then(r => r.blob())
+      .then(blobFile => new File([blobFile], 'VIDEO_FILE', { type: 'video/mp4' }))
 
-  /**
-   * Handlers
-   */
-
-  const handleFileClick = () => {
-    var fileInputEl = document.createElement('input')
-    fileInputEl.type = 'file'
-    fileInputEl.accept = '*'
-    fileInputEl.style.display = 'none'
-    document.body.appendChild(fileInputEl)
-    fileInputEl.addEventListener('input', function (e) {
-      handleUpload(e as any)
-      document.body.removeChild(fileInputEl)
-    })
-    fileInputEl.click()
-  }
-
-  const handleUpload = async (evt: React.ChangeEvent<HTMLInputElement>) => {
-    let files = evt.target.files
-    if (files?.length !== 1) {
-      throw new Error(`Invalid number of files (expected 1, got ${files?.length})`)
-    }
-    setMimeType(files[0]?.type ?? 'application/octet-stream')
-    setSize(files[0]?.size ?? 0)
-    setImgStream(fileReaderStream(files[0]))
+    setMimeType(file.type ?? 'application/octet-stream')
+    setSize(file.size ?? 0)
+    setImgStream(fileReaderStream(file))
   }
 
   const handlePrice = async () => {
@@ -161,9 +135,19 @@ export default function Bundlr() {
     }
   }
 
+  const getBundlrBalance = async () => {
+    address &&
+      bundler!
+        .getBalance(address)
+        //@ts-ignore
+        .then((res: BigNumber) => {
+          setBalance(res.toString())
+        })
+  }
+
   const uploadFile = async () => {
     if (imgStream) {
-      alert('Starting upload...')
+      const toastId = toast.loading('Starting upload...')
       setTotalUploaded(0)
       setLastUploadId(undefined)
       await sleep(2_000) // sleep as this is all main thread (TODO: move to web worker?)
@@ -190,17 +174,36 @@ export default function Bundlr() {
         })
         .then(res => {
           setLastUploadId(res.data.id)
-          alert(
-            res?.status === 200 || res?.status === 201
-              ? `Successful! https://arweave.net/${res.data.id}`
-              : `Unsuccessful! ${res?.status}`
-          )
+          res?.status === 200 || res?.status === 201
+            ? toast.success(`Successful! https://arweave.net/${res.data.id}`, {
+                id: toastId,
+              })
+            : toast.error(`Unsuccessful! ${res?.status}`, {
+                id: toastId,
+              })
         })
         .catch(e => {
-          alert(`Failed to upload - ${e}`)
+          toast.error(`Failed to upload - ${e}`, {
+            id: toastId,
+          })
         })
     }
   }
+
+  /**
+   * Effects
+   */
+  useEffect(() => {
+    getBundlrBalance()
+  }, [address, bundler])
+
+  useEffect(() => {
+    fileToStream()
+  }, [href])
+
+  useEffect(() => {
+    handlePrice()
+  }, [size, href, bundler])
 
   /**
    * Helpers
@@ -221,29 +224,23 @@ export default function Bundlr() {
   }
 
   return (
-    <ClientOnly>
-      <div>Hello</div>
-      <button
-        onClick={async () => {
-          await initBundlr()
-        }}
-      >
-        Connect to Bundlr
-      </button>
-      <div>Bundlr address: {address ? address : 'connect to show'}</div>
-      <button
-        onClick={async () => {
-          address &&
-            bundler!
-              .getBalance(address)
-              //@ts-ignore
-              .then((res: BigNumber) => {
-                setBalance(res.toString())
-              })
-        }}
-      >
-        Get Matic Balance on Bundlr
-      </button>
+    <div className="flex flex-col gap-2">
+      <h4>Upload to Arweave</h4>
+
+      <div>
+        {address ? (
+          'Connected'
+        ) : (
+          <button
+            className="btn-block btn"
+            onClick={async () => {
+              await initBundlr()
+            }}
+          >
+            Connect to Bundlr
+          </button>
+        )}
+      </div>
       {balance && (
         <div>
           {toProperCase(currency)} Balance:{' '}
@@ -251,31 +248,45 @@ export default function Bundlr() {
           {bundler?.currencyConfig.ticker.toLowerCase()}
         </div>
       )}
-
+      {/* 
       <button onClick={fund}>Fund Bundlr</button>
       <input
         placeholder={`${toProperCase(currency)} Amount`}
         value={fundAmount || ''}
         onChange={updateFundAmount}
-      />
-      <button onClick={withdraw}>Withdraw Balance</button>
+      /> */}
+      <div className="input-group">
+        <input
+          type="text"
+          placeholder={`${toProperCase(currency)} Amount`}
+          value={fundAmount || ''}
+          onChange={updateFundAmount}
+          className="input"
+        />
+        <button onClick={fund} className="btn">
+          Fund
+        </button>
+      </div>
+      {/* <button onClick={withdraw}>Withdraw Balance</button>
       <input
         placeholder={`${toProperCase(currency)} Amount`}
         value={withdrawAmount || ''}
         onChange={updateWithdrawAmount}
-      />
+      /> */}
 
       <div>
-        <button onClick={handleFileClick}>Select file from Device</button>
+        {/* <button onClick={handleFileClick}>Select file from Device</button> */}
         {imgStream && (
           <>
-            <button onClick={handlePrice}>Get Price</button>
+            {/* <button onClick={handlePrice}>Get Price</button> */}
             {price && (
               <div>{`Cost: ${bundler?.utils
                 .unitConverter(price)
                 .toString()} ${bundler?.currencyConfig.ticker.toLowerCase()} `}</div>
             )}
-            <button onClick={uploadFile}>Upload to Bundlr</button>
+            <button className="btn-block btn" onClick={uploadFile}>
+              Upload to Bundlr
+            </button>
           </>
         )}
       </div>
@@ -292,7 +303,7 @@ export default function Bundlr() {
             <p>Upload progress: {((totalUploaded / (size ?? 0)) * 100).toFixed()}%</p>
           </>
         ))}
-    </ClientOnly>
+    </div>
   )
 }
 

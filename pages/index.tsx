@@ -9,7 +9,6 @@ import ClientOnly from '../components/ClientOnly'
 import { Play, SkipBack, SkipForward } from '../components/Icons/VideoIcons'
 import Navigation from '../components/Navigation'
 import Video from '../components/Video'
-import VideoSettings from '../components/VideoSettings'
 import useCanvas from '../hooks/useCanvas'
 import useFFmpeg from '../hooks/useFFmpeg'
 import FFmpegStore from '../store/valtio'
@@ -87,8 +86,6 @@ const Home: NextPage = () => {
               </div>
             )
           })}
-
-        {/* <BundlrUploader /> */}
       </>
     )
   }
@@ -140,6 +137,8 @@ const Home: NextPage = () => {
             Completed
           </a>
         )}
+
+        {href && <BundlrUploader />}
       </>
     )
   }
@@ -175,7 +174,7 @@ const Home: NextPage = () => {
           <div className="flex h-full flex-col justify-between">
             <div className="flex justify-center">
               <div className="flex overflow-hidden rounded-2xl">
-                {videoState.video && <canvas ref={canvasRef} width="740" height="560"></canvas>}
+                {videoState.video && <canvas ref={canvasRef} width="740" height="460"></canvas>}
               </div>
             </div>
             <div className="flex justify-between p-2 ">
