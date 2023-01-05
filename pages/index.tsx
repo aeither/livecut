@@ -94,32 +94,38 @@ const Home: NextPage = () => {
     return (
       <>
         {/* <VideoSettings /> */}
-        <h4>Advanced Configuration</h4>
-        <div className="flex w-full flex-col gap-2">
-          <input
-            value={inputOptions}
-            className="input max-w-xs"
-            placeholder="please enter input options"
-            onChange={event => setInputOptions(event.target.value)}
-          />
-          <input
-            value={name}
-            className="input max-w-xs"
-            placeholder="please enter input filename"
-            onChange={event => setName(event.target.value)}
-          />
-          <input
-            value={outputOptions}
-            className="input max-w-xs"
-            placeholder="please enter output options"
-            onChange={event => setOutputOptions(event.target.value)}
-          />
-          <input
-            value={output}
-            className="input max-w-xs"
-            placeholder="Please enter the download file name"
-            onChange={event => setOutput(event.target.value)}
-          />
+        <div className="collapse">
+          <input type="checkbox" className="peer" />
+          <div className="collapse-title text-xl font-medium">Advanced Configuration</div>
+
+          <div className="collapse-content">
+            <div className="flex w-full flex-col gap-2">
+              <input
+                value={inputOptions}
+                className="input max-w-xs"
+                placeholder="please enter input options"
+                onChange={event => setInputOptions(event.target.value)}
+              />
+              <input
+                value={name}
+                className="input max-w-xs"
+                placeholder="please enter input filename"
+                onChange={event => setName(event.target.value)}
+              />
+              <input
+                value={outputOptions}
+                className="input max-w-xs"
+                placeholder="please enter output options"
+                onChange={event => setOutputOptions(event.target.value)}
+              />
+              <input
+                value={output}
+                className="input max-w-xs"
+                placeholder="Please enter the download file name"
+                onChange={event => setOutput(event.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
         <h4>Convert</h4>
