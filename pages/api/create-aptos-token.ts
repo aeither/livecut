@@ -21,7 +21,7 @@ export type CreateAptosTokenResponse = {
 
 const NODE_URL = 'https://fullnode.devnet.aptoslabs.com'
 
-const COLLECTION_NAME = 'Livepeer Video NFT'
+const COLLECTION_NAME = 'Livecut Video NFT'
 const COLLECTION_DESCRIPTION =
   "Video NFTs using Livepeer's decentralized video transcoding protocol."
 const COLLECTION_URI = 'https://livepeer.org'
