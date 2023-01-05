@@ -28,7 +28,7 @@ const MessageComposer = ({ onSend }: MessageComposerProps): JSX.Element => {
       <form className="flex flex-col" autoComplete="off" onSubmit={onSubmit}>
         <input
           type="text"
-          placeholder="Type something..."
+          placeholder="Say hi..."
           className="input"
           name="message"
           value={message}
