@@ -144,7 +144,9 @@ export default function MintAptos({ video }: { video: File | undefined }) {
       {address && (
         <div className="w-full">
           {progressFormatted && <p>{progressFormatted}</p>}
-          {(isLoading || isCreatingNft) && <progress className={clsx('progress progress-primary')}></progress>}
+          {(isLoading || isCreatingNft) && (
+            <progress className={clsx('progress progress-primary')}></progress>
+          )}
 
           {asset?.status?.phase !== 'ready' ? (
             <button
@@ -166,7 +168,7 @@ export default function MintAptos({ video }: { video: File | undefined }) {
                   setIsExportedStarted(true)
                   updateAsset({
                     assetId: asset.id,
-                    storage: { ipfs: true },
+                    storage: { ipfs: true,  },
                   })
                 }
               }}
