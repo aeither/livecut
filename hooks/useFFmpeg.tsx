@@ -7,9 +7,9 @@ import FFmpegStore from '../store/valtio'
 import qs from 'query-string'
 
 export default function useFFmpeg() {
-  const { files, href, inputOptions, name, output, outputOptions, spinning, tip, outputFiles } =
+  const { files, href, inputOptions, name, output, outputOptions, progress, tip, outputFiles } =
     useSnapshot(FFmpegStore.state)
-  const { setInputOptions, setOutputOptions, setOutputFiles, setHref } = FFmpegStore
+  const { setInputOptions, setOutputOptions, setOutputFiles, setHref, setProgress } = FFmpegStore
 
   const ffmpeg = useRef<FFmpeg>()
 
@@ -34,6 +34,7 @@ export default function useFFmpeg() {
       if (type) {
         const objectURL = URL.createObjectURL(new Blob([data.buffer], { type: type.mime }))
         setHref(objectURL)
+        setProgress(0)
       }
     } catch (err) {
       console.error(err)
@@ -74,6 +75,7 @@ export default function useFFmpeg() {
       })
       ffmpeg.current.setProgress(({ ratio }) => {
         console.log(ratio)
+        setProgress(Math.ceil(ratio * 100))
       })
       console.log('loading ffmpeg')
       await ffmpeg.current.load()

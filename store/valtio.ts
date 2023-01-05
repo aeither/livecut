@@ -11,6 +11,7 @@ type OutputFile = {
 interface State {
   spinning: boolean
   tip: boolean
+  progress: number
   inputOptions: string
   outputOptions: string
   files: string
@@ -28,6 +29,7 @@ interface State {
 const state = proxy<State>({
   spinning: false,
   tip: false,
+  progress: 0,
   inputOptions: '-i',
   outputOptions: '',
   files: '',
@@ -50,6 +52,9 @@ const FFmpegStore = {
   },
   setTip: (tip: boolean) => {
     state.tip = tip
+  },
+  setProgress: (progress: number) => {
+    state.progress = progress
   },
   setInputOptions: (inputOptions: string) => {
     state.inputOptions = inputOptions

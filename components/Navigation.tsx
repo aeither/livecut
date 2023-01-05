@@ -1,18 +1,11 @@
 import { ConnectKitButton } from 'connectkit'
-import { useAccount, useEnsAvatar, useEnsName } from 'wagmi'
-import ClientOnly from '../components/ClientOnly'
 import NextLink from 'next/link'
+import { useSnapshot } from 'valtio'
+import FFmpegStore from '../store/valtio'
 import { UserIcon } from './Icons/VideoIcons'
 
 const Navigation = () => {
-  const { address, isConnecting, isDisconnected } = useAccount()
-
-  const { data: name } = useEnsName({
-    address: address,
-  })
-  const { data: avatar } = useEnsAvatar({
-    address: address,
-  })
+  const { progress } = useSnapshot(FFmpegStore.state)
 
   return (
     <div className="navbar bg-base-100 p-0">
@@ -23,11 +16,11 @@ const Navigation = () => {
         {/* <a className="btn-ghost btn text-xl normal-case">Livecut</a> */}
       </div>
       <div className="navbar-center hidden lg:flex">
-        <progress className="progress progress-success w-72"></progress>
+        <progress className="progress progress-success w-72" value={progress} max="100"></progress>
       </div>
       <div className="navbar-end pr-4">
         <NextLink href={'/profile'}>
-          <a className="btn-circle btn no-underline mr-4">
+          <a className="btn-circle btn mr-4 no-underline">
             <UserIcon />
           </a>
         </NextLink>
