@@ -1,66 +1,65 @@
-import { AptosAccount, AptosClient, HexString, TokenClient } from "aptos";
-
-import { NextApiRequest, NextApiResponse } from "next";
+import { AptosAccount, AptosClient, HexString, TokenClient } from 'aptos'
+import { NextApiRequest, NextApiResponse } from 'next'
+import dotenv from 'dotenv'
+dotenv.config()
 
 export type ApiError = {
-  message: string;
-};
+  message: string
+}
 
 export type CreateAptosTokenBody = {
-  receiver: string;
-  metadataUri: string;
-};
+  receiver: string
+  metadataUri: string
+}
 
 export type CreateAptosTokenResponse = {
-  creator: string;
-  collectionName: string;
-  tokenName: string;
-  tokenPropertyVersion: number;
-};
+  creator: string
+  collectionName: string
+  tokenName: string
+  tokenPropertyVersion: number
+}
 
-const NODE_URL = "https://fullnode.devnet.aptoslabs.com";
+const NODE_URL = 'https://fullnode.devnet.aptoslabs.com'
 
-const COLLECTION_NAME = "Livepeer Video NFT";
+const COLLECTION_NAME = 'Livepeer Video NFT'
 const COLLECTION_DESCRIPTION =
-  "Video NFTs using Livepeer's decentralized video transcoding protocol.";
-const COLLECTION_URI = "https://livepeer.org";
+  "Video NFTs using Livepeer's decentralized video transcoding protocol."
+const COLLECTION_URI = 'https://livepeer.org'
 
-const TOKEN_VERSION = 0;
+const TOKEN_VERSION = 0
 const TOKEN_DESCRIPTION =
-  "A video NFT which uses Livepeer's decentralized video transcoding protocol.";
+  "A video NFT which uses Livepeer's decentralized video transcoding protocol."
 
 const handler = async (
   req: NextApiRequest,
   res: NextApiResponse<CreateAptosTokenResponse | ApiError>
 ) => {
   try {
-    const method = req.method;
+    const method = req.method
 
-    if (method === "POST") {
-      const { receiver, metadataUri }: CreateAptosTokenBody = req.body;
+    if (method === 'POST') {
+      const { receiver, metadataUri }: CreateAptosTokenBody = req.body
 
       if (!receiver || !metadataUri) {
-        return res.status(400).json({ message: "Missing data in body." });
+        return res.status(400).json({ message: 'Missing data in body.' })
       }
 
-      const client = new AptosClient(NODE_URL);
-      const tokenClient = new TokenClient(client);
+      const client = new AptosClient(NODE_URL)
+      const tokenClient = new TokenClient(client)
 
-      if (!process.env.APTOS_PRIVATE_KEY) {
-        return res.status(500).json({ message: "Aptos config missing." });
+      // TODO fix APTOS_KEY undefined
+      if (!process.env.NEXT_PUBLIC_APTOS_KEY) {
+        return res.status(500).json({ message: 'Aptos config missing.' })
       }
 
       const issuer = new AptosAccount(
-        new HexString(process.env.APTOS_PRIVATE_KEY).toUint8Array()
-      );
+        new HexString(process.env.NEXT_PUBLIC_APTOS_KEY).toUint8Array()
+      )
 
-      let collectionData: any;
+      let collectionData: any
 
       try {
-        collectionData = await tokenClient.getCollectionData(
-          issuer.address(),
-          COLLECTION_NAME
-        );
+        collectionData = await tokenClient.getCollectionData(issuer.address(), COLLECTION_NAME)
       } catch (e) {
         // if the collection does not exist, we create it
         const createCollectionHash = await tokenClient.createCollection(
@@ -68,23 +67,17 @@ const handler = async (
           COLLECTION_NAME,
           COLLECTION_DESCRIPTION,
           COLLECTION_URI
-        );
+        )
         await client.waitForTransaction(createCollectionHash, {
           checkSuccess: true,
-        });
+        })
 
-        collectionData = await tokenClient.getCollectionData(
-          issuer.address(),
-          COLLECTION_NAME
-        );
-        console.log(
-          "🚀 ~ file: create-aptos-token.ts:72 ~ collectionData",
-          collectionData
-        );
+        collectionData = await tokenClient.getCollectionData(issuer.address(), COLLECTION_NAME)
+        console.log('🚀 ~ file: create-aptos-token.ts:72 ~ collectionData', collectionData)
       }
 
       // each token increments by 1, e.g. "Video NFT 1"
-      const tokenName = `Video NFT ${Number(collectionData?.supply ?? 0) + 1}`;
+      const tokenName = `Video NFT ${Number(collectionData?.supply ?? 0) + 1}`
 
       const createTokenHash = await tokenClient.createToken(
         issuer,
@@ -93,8 +86,8 @@ const handler = async (
         TOKEN_DESCRIPTION,
         1,
         metadataUri
-      );
-      await client.waitForTransaction(createTokenHash, { checkSuccess: true });
+      )
+      await client.waitForTransaction(createTokenHash, { checkSuccess: true })
 
       // offer the token to the address in the request body
       // this must be confirmed by the recipient, so this is safe
@@ -110,25 +103,23 @@ const handler = async (
         tokenName,
         1,
         TOKEN_VERSION
-      );
-      await client.waitForTransaction(offerTokenHash, { checkSuccess: true });
+      )
+      await client.waitForTransaction(offerTokenHash, { checkSuccess: true })
 
       return res.status(200).json({
         creator: issuer.address().hex(),
         collectionName: COLLECTION_NAME,
         tokenName,
         tokenPropertyVersion: TOKEN_VERSION,
-      });
+      })
     }
 
-    res.setHeader("Allow", ["POST"]);
-    return res.status(405).end(`Method ${method} Not Allowed`);
+    res.setHeader('Allow', ['POST'])
+    return res.status(405).end(`Method ${method} Not Allowed`)
   } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ message: (err as Error)?.message ?? "Error" });
+    console.error(err)
+    return res.status(500).json({ message: (err as Error)?.message ?? 'Error' })
   }
-};
+}
 
-export default handler;
+export default handler

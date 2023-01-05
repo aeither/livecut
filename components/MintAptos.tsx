@@ -1,9 +1,10 @@
 import { LivepeerProvider, useAsset, useCreateAsset, useUpdateAsset } from '@livepeer/react'
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { CreateAptosTokenBody, CreateAptosTokenResponse } from '../pages/api/create-aptos-token'
 import { AptosContext } from '../pages/_app'
+import FFmpegStore from '../store/valtio'
 import styles from '../styles/Home.module.css'
 
 declare global {
@@ -14,6 +15,8 @@ declare global {
 }
 
 export default function MintAptos({ video }: { video: File | undefined }) {
+  const { setProgress } = FFmpegStore
+
   const [address, setAddress] = useState<string | null>(null)
   //   const [video, setVideo] = useState<File | null>(null)
   const [isCreatingNft, setIsCreatingNft] = useState(false)
@@ -118,6 +121,14 @@ export default function MintAptos({ video }: { video: File | undefined }) {
     }
   }, [address, aptosClient, asset?.storage?.ipfs?.nftMetadata?.url, setIsCreatingNft])
 
+  // useEffect(() => {
+  //   if (isLoading || isCreatingNft) {
+  //     setProgress(undefined)
+  //   } else {
+  //     setProgress(0)
+  //   }
+  // }, [isLoading, isCreatingNft])
+
   return (
     <div>
       {address ? (
@@ -131,53 +142,51 @@ export default function MintAptos({ video }: { video: File | undefined }) {
       )}
 
       {address && (
-        <div>
-          <div className="w-full">
-            {asset?.status?.phase !== 'ready' ? (
-              <button
-                className={clsx('btn-block btn', isLoading && 'loading')}
-                onClick={() => {
-                  if (video) {
-                    createAsset({ name: video.name, file: video })
-                  }
-                }}
-                disabled={!video || isLoading || Boolean(asset)}
-              >
-                Upload Asset
-              </button>
-            ) : asset?.status?.phase === 'ready' && asset?.storage?.status?.phase !== 'ready' ? (
-              <button
-                className={clsx('btn-block btn', isLoading && 'loading')}
-                onClick={() => {
-                  if (asset.id) {
-                    setIsExportedStarted(true)
-                    updateAsset({
-                      assetId: asset.id,
-                      storage: { ipfs: true },
-                    })
-                  }
-                }}
-                disabled={!asset.id || isLoading || Boolean(asset?.storage?.ipfs?.cid)}
-              >
-                Upload to IPFS
-              </button>
-            ) : creationHash ? (
-              <p className={styles.link}>
-                <a href={`https://explorer.aptoslabs.com/txn/${creationHash}?network=Devnet`}>
-                  View Mint Transaction
-                </a>
-              </p>
-            ) : asset?.storage?.status?.phase === 'ready' ? (
-              <button
-                className={clsx('btn-block btn', isCreatingNft && 'loading')}
-                onClick={mintNft}
-              >
-                Mint Video NFT
-              </button>
-            ) : (
-              <></>
-            )}
-          </div>
+        <div className="w-full">
+          {progressFormatted && <p>{progressFormatted}</p>}
+          {(isLoading || isCreatingNft) && <progress className={clsx('progress progress-primary')}></progress>}
+
+          {asset?.status?.phase !== 'ready' ? (
+            <button
+              className={clsx('btn-block btn', isLoading && 'loading')}
+              onClick={() => {
+                if (video) {
+                  createAsset({ name: video.name, file: video })
+                }
+              }}
+              disabled={!video || isLoading || Boolean(asset)}
+            >
+              Upload Asset
+            </button>
+          ) : asset?.status?.phase === 'ready' && asset?.storage?.status?.phase !== 'ready' ? (
+            <button
+              className={clsx('btn-block btn', isLoading && 'loading')}
+              onClick={() => {
+                if (asset.id) {
+                  setIsExportedStarted(true)
+                  updateAsset({
+                    assetId: asset.id,
+                    storage: { ipfs: true },
+                  })
+                }
+              }}
+              disabled={!asset.id || isLoading || Boolean(asset?.storage?.ipfs?.cid)}
+            >
+              Upload to IPFS
+            </button>
+          ) : creationHash ? (
+            <p className={styles.link}>
+              <a href={`https://explorer.aptoslabs.com/txn/${creationHash}?network=Devnet`}>
+                View Mint Transaction
+              </a>
+            </p>
+          ) : asset?.storage?.status?.phase === 'ready' ? (
+            <button className={clsx('btn-block btn', isCreatingNft && 'loading')} onClick={mintNft}>
+              Mint Video NFT
+            </button>
+          ) : (
+            <></>
+          )}
         </div>
       )}
     </div>

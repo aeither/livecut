@@ -11,7 +11,7 @@ type OutputFile = {
 interface State {
   spinning: boolean
   tip: boolean
-  progress: number
+  progress: number | undefined
   inputOptions: string
   outputOptions: string
   files: string
@@ -53,7 +53,7 @@ const FFmpegStore = {
   setTip: (tip: boolean) => {
     state.tip = tip
   },
-  setProgress: (progress: number) => {
+  setProgress: (progress: number | undefined) => {
     state.progress = progress
   },
   setInputOptions: (inputOptions: string) => {
