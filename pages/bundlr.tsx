@@ -223,7 +223,6 @@ export default function Chat() {
 
   return (
     <ClientOnly>
-      <ConnectKitButton />
       <div>Hello</div>
       <button
         onClick={async () => {

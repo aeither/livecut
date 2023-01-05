@@ -96,7 +96,7 @@ const MessagesList = ({ messages, fetchNextMessages, hasMore }: MessageListProps
       dataLength={messages.length}
       next={fetchNextMessages}
       className="scrollbar-hide flex flex-col-reverse overflow-y-auto pl-4"
-      height={'50vh'}
+      height={'40vh'}
       inverse
       endMessage={<ConversationBeginningNotice />}
       hasMore={hasMore}
