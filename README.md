@@ -57,7 +57,7 @@ npm run dev
 - NextJS, React, Typescript, TailwindCSS.
 - Martian Wallet, aptos, livepeerJS SDK, XMTP, huddle01, ENS, FFmpeg, DaisyUI, Wagmi, Bundlr.
 
-## Roadmap  
+## Future Plan  
 
 - [ ] Multi-tenant
 - [ ] More editing features
