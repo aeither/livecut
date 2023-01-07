@@ -13,6 +13,15 @@ Web-based Video Editor that exports to Web3.
 
 Livecut allows users to edit and collaborate on videos from within their browser. With the ability to export finished projects to decentralized storages such as IPFS or Arweave. Additionally, users have the option to mint Video NFTs on Polygon and Aptos.
 
+## Features
+
+-  💬 Chat with EVM compatible addresses
+-  👥 Video call within editor
+-  ⬆️ Upload video to decentralized storage
+-  ✂️ Easy video cutting
+-  🛠 Advanced FFmpeg configuration
+-  ⛏ Mint Video NFTs
+
 ## Requirements
 
 - Metamask with Goerli and Mumbai https://chainlist.org/
