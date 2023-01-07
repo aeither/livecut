@@ -1,7 +1,6 @@
 import { Conversation } from '@xmtp/xmtp-js'
 import { useCallback } from 'react'
 import { getConversationKey } from '../helpers'
-import { useAppStore } from '../store/state'
 import useGetMessages from './useGetMessages'
 
 const useSendMessage = (selectedConversation?: Conversation) => {

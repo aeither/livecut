@@ -1,4 +1,3 @@
-import { ConnectKitButton } from 'connectkit'
 import { useAccount, useEnsAvatar, useEnsName } from 'wagmi'
 import ClientOnly from '../components/ClientOnly'
 

@@ -1,16 +1,16 @@
 import { useHuddleStore } from '@huddle01/huddle01-client/store'
 import { useContext } from 'react'
+import { StateContext } from '../store/context'
 import ClientOnly from './ClientOnly'
+import { MicOnIcon, VideoOnIcon } from './Icons/VideoIcons'
 import StreamVideo from './StreamVideo'
 import VideoAudio from './VideoAudio'
-import { StateContext } from '../store/context'
 declare global {
   interface Window {
     aptos: any
     martian: any | undefined
   }
 }
-import { MicOnIcon, VideoOffIcon, VideoOnIcon } from './Icons/VideoIcons'
 
 export default function Video() {
   const { huddleClient } = useContext(StateContext)
@@ -55,9 +55,6 @@ export default function Video() {
             <button onClick={() => huddleClient.enableMic()} className="btn-circle btn">
               <MicOnIcon />
             </button>
-            {/* <button onClick={() => huddleClient.disableWebcam()} className="btn-circle btn">
-              <VideoOffIcon />
-            </button> */}
           </div>
         </div>
 

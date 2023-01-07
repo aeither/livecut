@@ -13,7 +13,6 @@ const Navigation = () => {
         <div className="w-32">
           <img src="/images/livecut-logo-text-transparent.png" width="100%" alt="" />
         </div>
-        {/* <a className="btn-ghost btn text-xl normal-case">Livecut</a> */}
       </div>
       <div className="navbar-center hidden lg:flex">
         <progress className="progress progress-success w-72" value={progress} max="100"></progress>

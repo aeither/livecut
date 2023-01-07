@@ -1,30 +1,26 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 
-export default function ClientOnly({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ClientOnly({ children }: { children: React.ReactNode }) {
   // State / Props
-  const [hasMounted, setHasMounted] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false)
 
   // Hooks
   useEffect(() => {
-    setHasMounted(true);
-    getProvider();
-  }, []);
+    setHasMounted(true)
+    getProvider()
+  }, [])
 
   const getProvider = () => {
-    if ("martian" in window) {
-      return window.martian;
+    if ('martian' in window) {
+      return window.martian
     }
-    (window as any).open("https://www.martianwallet.xyz/", "_blank");
-  };
+    ;(window as any).open('https://www.martianwallet.xyz/', '_blank')
+  }
 
   // Render
-  if (!hasMounted) return null;
+  if (!hasMounted) return null
 
-  return <div>{children}</div>;
+  return <div>{children}</div>
 }

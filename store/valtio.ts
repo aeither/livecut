@@ -19,8 +19,6 @@ interface State {
   name: string
   output: string
   outputFiles: OutputFile[]
-  //   file: File | undefined
-  //   fileList: File[]
 }
 
 /**
@@ -37,8 +35,6 @@ const state = proxy<State>({
   name: 'input.mp4',
   output: 'output.mp4',
   outputFiles: [],
-  //   file: undefined,
-  //   fileList: [],
 })
 
 /**
@@ -77,12 +73,6 @@ const FFmpegStore = {
   setOutputFiles: (outputFiles: OutputFile[]) => {
     state.outputFiles = outputFiles
   },
-  //   setFile: (file: File) => {
-  //     state.file = file
-  //   },
-  //   setFileList: (fileList: File[]) => {
-  //     state.fileList = fileList
-  //   },
 }
 
 export default FFmpegStore

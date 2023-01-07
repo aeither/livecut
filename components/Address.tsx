@@ -1,5 +1,4 @@
 import { classNames, shortAddress } from '../helpers'
-// import useEns from '../hooks/useEns'
 
 type AddressProps = {
   address: string
@@ -7,19 +6,9 @@ type AddressProps = {
 }
 
 const Address = ({ address, className }: AddressProps): JSX.Element => {
-  // const { name, loading } = useEns(address)
-
   return (
-    <span
-      className={classNames(
-        className || '',
-        'font-mono'
-        // loading ? 'animate-pulse' : ''
-      )}
-      title={address}
-    >
+    <span className={classNames(className || '', 'font-mono')} title={address}>
       {shortAddress(address)}
-      {/* {name || shortAddress(address)} */}
     </span>
   )
 }

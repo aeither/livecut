@@ -2,13 +2,11 @@ import { Conversation, DecodedMessage, SortDirection, Stream } from '@xmtp/xmtp-
 import { useEffect, useState } from 'react'
 import { getConversationKey, shortAddress, truncate } from '../helpers'
 import { useAppStore } from '../store/state'
-// import useWalletProvider from './useWalletProvider'
 
 let latestMsgId: string
 
 export const useListConversations = () => {
   const walletAddress = useAppStore(state => state.address)
-  // const { lookupAddress } = useWalletProvider()
   const convoMessages = useAppStore(state => state.convoMessages)
   const client = useAppStore(state => state.client)
   const conversations = useAppStore(state => state.conversations)

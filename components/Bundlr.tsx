@@ -1,15 +1,14 @@
 import { WebBundlr } from '@bundlr-network/client'
 import BigNumber from 'bignumber.js'
 import { useEffect, useState } from 'react'
-import ClientOnly from './ClientOnly'
 // @ts-ignore
 import { sleep } from '@bundlr-network/client/build/common/upload'
 import { providers } from 'ethers'
 import fileReaderStream from 'filereader-stream'
-import { useNetwork } from 'wagmi'
-import { useSnapshot } from 'valtio'
-import FFmpegStore from '../store/valtio'
 import toast from 'react-hot-toast'
+import { useSnapshot } from 'valtio'
+import { useNetwork } from 'wagmi'
+import FFmpegStore from '../store/valtio'
 
 const bundlerHttpAddress = 'https://devnet.bundlr.network'
 const currency = 'matic'

@@ -3,7 +3,6 @@ import { fileTypeFromBuffer } from 'file-type'
 import { useEffect, useRef } from 'react'
 import { useSnapshot } from 'valtio'
 import FFmpegStore from '../store/valtio'
-// import numerify from 'numerify/lib/index.cjs'
 import qs from 'query-string'
 
 export default function useFFmpeg() {
