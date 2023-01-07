@@ -28,6 +28,7 @@
     "ethers": "^5.7.2",
     "file-type": "^18.0.0",
     "filereader-stream": "^2.0.0",
+    "framer-motion": "^8.2.4",
     "livepeer": "^1.0.3",
     "moment": "^2.29.4",
     "next": "^12.3.1",

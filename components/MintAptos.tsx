@@ -1,11 +1,10 @@
 import { LivepeerProvider, useAsset, useCreateAsset, useUpdateAsset } from '@livepeer/react'
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { useAccount, useContractWrite, usePrepareContractWrite } from 'wagmi'
 import { CreateAptosTokenBody, CreateAptosTokenResponse } from '../pages/api/create-aptos-token'
 import { AptosContext } from '../pages/_app'
-import FFmpegStore from '../store/valtio'
 import styles from '../styles/Home.module.css'
 import { videoNftAbi } from './videoNftAbi'
 

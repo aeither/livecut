@@ -51,6 +51,18 @@ const Home: NextPage = () => {
     onUpdateRange()
   }, [currentTime])
 
+  useEffect(() => {
+    const updateFile = async () => {
+      if (href === '') return
+
+      let file = await fetch(href)
+        .then(r => r.blob())
+        .then(blobFile => new File([blobFile], 'VIDEO_FILE', { type: 'video/mp4' }))
+      setFile(file)
+    }
+    updateFile()
+  }, [href])
+
   const VideoMedia = () => {
     // Functions
     const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -131,15 +143,17 @@ const Home: NextPage = () => {
         </div>
 
         <h4>Convert</h4>
-        <button
-          disabled={!Boolean(file)}
-          className="btn"
-          onClick={() => {
-            if (file) handleExec(file, fileList)
-          }}
-        >
-          Render
-        </button>
+        <div className="pb-2">
+          <button
+            disabled={!Boolean(file)}
+            className="btn btn-block"
+            onClick={() => {
+              if (file) handleExec(file, fileList)
+            }}
+          >
+            Render
+          </button>
+        </div>
         {href && (
           <a className="p-4" href={href} download={output}>
             Completed
