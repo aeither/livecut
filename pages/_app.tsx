@@ -9,6 +9,7 @@ import { Toaster } from 'react-hot-toast'
 import { configureChains, createClient, WagmiConfig } from 'wagmi'
 import { goerli, mainnet, optimismGoerli, polygon, polygonMumbai } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
+import DesktopOnly from '../components/DesktopOnly'
 import { StateContext } from '../store/context'
 import '../styles/globals.css'
 
@@ -47,7 +48,9 @@ function MyApp({ Component, pageProps }: AppProps) {
             <AptosContext.Provider value={aptosClient}>
               <LivepeerConfig client={livepeerClient}>
                 <QueryClientProvider client={queryClient}>
-                  <Component {...pageProps} />
+                  <DesktopOnly>
+                    <Component {...pageProps} />
+                  </DesktopOnly>
                   <Toaster />
                 </QueryClientProvider>
               </LivepeerConfig>
