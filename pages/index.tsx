@@ -82,7 +82,7 @@ const Home: NextPage = () => {
 
             return (
               <div className="mt-4 flex p-2" key={i}>
-                <div className="overflow-hidden rounded-lg hover:ring">
+                <div className="overflow-hidden rounded-lg hover:ring ring-primary">
                   <video src={url} width="100%"></video>
                 </div>
               </div>
@@ -156,7 +156,7 @@ const Home: NextPage = () => {
   return (
     <ClientOnly>
       <Navigation />
-
+      <div className="divider my-2 h-2"></div>
       <div className="grid min-h-[calc(100vh-64px-64px)] grid-cols-5 gap-4 md:px-4">
         <div className="col-span-1 row-span-5 rounded-xl bg-base-200 p-4">
           <div className="flex h-full flex-col">
@@ -179,7 +179,7 @@ const Home: NextPage = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-3 row-span-4 rounded-xl bg-base-200 p-4">
+        <div className="col-span-3 row-span-4 rounded-xl bg-base-300 p-4">
           {/* <h2>Video</h2> */}
           <div className="flex h-full flex-col justify-between">
             <div className="flex justify-center">
@@ -200,7 +200,7 @@ const Home: NextPage = () => {
                   <SkipBack />
                 </button>
                 <button
-                  className="btn-circle btn-lg btn"
+                  className="btn-circle btn-lg btn "
                   onClick={() => {
                     playOrPause()
                   }}
