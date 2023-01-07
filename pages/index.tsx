@@ -1,3 +1,4 @@
+import { Slider } from 'antd'
 import clsx from 'clsx'
 import type { NextPage } from 'next'
 import { useCallback, useEffect, useState } from 'react'
@@ -240,6 +241,14 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="col-span-4 row-span-1 rounded-xl bg-base-200 p-4">
+          <input
+            type="range"
+            step={0.05}
+            className="range range-accent"
+            min="0"
+            max={String(videoState.video?.duration)}
+            onChange={e => setFormattedTime(e.target.value)}
+          />
           <label className="label flex cursor-pointer justify-start">
             <span className="label-text">Cut video</span>
             <div className="m-1 flex items-center justify-center rounded bg-base-300">
@@ -250,21 +259,16 @@ const Home: NextPage = () => {
               />
             </div>
           </label>
-          <input
-            type="range"
+          <Slider
+            range
+            min={0}
+            max={videoState.video ? videoState.video.duration : 0}
             step={0.05}
-            className="range range-secondary"
-            min="0"
-            max={String(videoState.video?.duration)}
-            onChange={e => setFormattedTime(e.target.value, 'start')}
-          />
-          <input
-            type="range"
-            step={0.05}
-            className="range range-accent"
-            min="0"
-            max={String(videoState.video?.duration)}
-            onChange={e => setFormattedTime(e.target.value)}
+            onChange={e => {
+              setFormattedTime(e[0], 'start')
+              setFormattedTime(e[1], 'end')
+            }}
+            disabled={!isCutVideo}
           />
           <p>
             From {cutStartTime} to {cutEndTime}

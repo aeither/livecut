@@ -51,7 +51,7 @@ export default function useCanvas() {
     videoState.video.paused ? videoState.video.play() : videoState.video.pause()
   }
 
-  const setFormattedTime = (value: string, cut = 'end') => {
+  const setFormattedTime = (value: string | number, cut?: string) => {
     if (videoState.video) {
       videoState.video.currentTime = Number(value)
 
@@ -61,10 +61,14 @@ export default function useCanvas() {
         .format('H:mm:ss')
 
       setCurrentTime(_currentTime)
-      if (cut === 'end') {
-        setCutEndTime(_currentTime)
-      } else {
-        setCutStartTime(_currentTime)
+
+      switch (cut) {
+        case 'end':
+          setCutEndTime(_currentTime)
+          break
+        case 'start':
+          setCutStartTime(_currentTime)
+        default:
       }
     }
   }
