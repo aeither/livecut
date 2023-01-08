@@ -5,8 +5,6 @@ Web-based Video Editor that exports to Web3.
 
 ## DEMO
 
-[VIDEO DEMO](PLACEHOLDER)
-
 [APP](https://livecut.vercel.app/)
 
 ## Overview  
